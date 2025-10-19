@@ -1,25 +1,28 @@
-﻿import { useState } from 'react';
+﻿"use client";
+
+import { useEffect, useRef, useState } from "react";
 import {
-  Anchor,
-  Button,
-  Container,
-  Group,
-  Image,
-  LoadingOverlay,
-  Stack,
+  Paper,
   TextInput,
+  PasswordInput,
+  Button,
   Title,
-} from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useDisclosure, useMediaQuery } from '@mantine/hooks';
-import { useNavigate } from 'react-router-dom';
+  Text,
+  Stack,
+  Anchor,
+  Group,
+  Divider,
+  Transition,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   LOCAL_STORAGE,
   ROUTER_PATH,
   sendErrorNotification,
   sendSuccessNotification,
-} from '../../shared';
-import { useTranslation } from 'react-i18next';
+} from "../../shared";
 import {
   selectEnvVars,
   selectMfa,
@@ -28,184 +31,220 @@ import {
   useAppDispatch,
   useAppSelector,
   useAuth,
-} from '../../stores';
-import { signIn } from '../../api';
-import { PasswordInputWithCapsLock } from '../../components';
-import { EAuthState } from '../../types';
+} from "../../stores";
+import { signIn } from "../../api";
+import { EAuthState } from "../../types";
+import Logo from "../../components/Logo";
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { t } = useTranslation('auth');
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const { t } = useTranslation("auth");
   const { envs } = useAppSelector(selectEnvVars);
   const { authSignIn } = useAuth();
   const mfa = useAppSelector(selectMfa);
   const dispatch = useAppDispatch();
+  const passwordRef = useRef<HTMLInputElement>(null);
 
-  const [loaderVisible, setLoaderState] = useDisclosure(false);
-  const [mfaRequired, setMfaRequired] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [approveMode, setApproveMode] = useState(false);
 
-  const initEmail = localStorage.getItem(LOCAL_STORAGE.LAST_EMAIL);
-  const isApproveMode = !!initEmail;
   const form = useForm({
-    initialValues: {
-      email: initEmail ?? '',
-      password: '',
-    },
+    initialValues: { email: "", password: "" },
     validate: {
-      email: (val) => (val ? null : t('signIn.fields.emailOrUsername.canNotBeEmpty')),
-      password: (val) => (val ? null : t('signIn.fields.password.canNotBeEmpty')),
+      email: (v) =>
+        v.trim().length === 0 ? t("signIn.fields.emailOrUsername.canNotBeEmpty") : null,
+      password: (v) =>
+        v.trim().length === 0 ? t("signIn.fields.password.canNotBeEmpty") : null,
     },
   });
 
-  const signInUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (form.validate().hasErrors) {
+  useEffect(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE.LAST_EMAIL);
+    if (saved) {
+      form.setFieldValue("email", saved);
+      setApproveMode(true);
+      setTimeout(() => passwordRef.current?.focus(), 200);
+    }
+  }, []);
+
+  const handleSubmit = async (values: typeof form.values) => {
+    if (form.validate().hasErrors) return;
+    if (mfaRequired && (!mfa.totpCode || mfa.totpCode.length !== 6)) {
+      sendErrorNotification(t("notifications:incorrectMfaCode"));
       return;
     }
 
-    if (mfaRequired && (!mfa.totpCode || mfa.totpCode.length === 0 || mfa.totpCode.length !== 6)) {
-      sendErrorNotification(t('notifications:incorrectMfaCode'));
-      return;
+    setLoading(true);
+    try {
+      const response = await signIn(values.email, values.password, mfa.totpCode, envs, t);
+      if (!response) return;
+
+      if (response === EAuthState.MfaRequired) {
+        setMfaRequired(true);
+        dispatch(setMfaEnabled(true));
+        return;
+      }
+
+      const jsonResponse = await (response as Response).json();
+      localStorage.setItem(LOCAL_STORAGE.LAST_EMAIL, values.email);
+
+      sendSuccessNotification(t("notifications:successful"));
+      authSignIn(
+        jsonResponse.user.email,
+        jsonResponse.username,
+        jsonResponse.localization,
+        jsonResponse.is12Hours,
+        jsonResponse.inactiveMinutes
+      );
+      navigate(ROUTER_PATH.MENU, { replace: true });
+    } catch {
+      sendErrorNotification(t("notifications:unknownError"));
+    } finally {
+      setLoading(false);
     }
-
-    setLoaderState.open();
-    const { email, password } = form.values;
-
-    const response = await signIn(email, password, mfa.totpCode, envs, t);
-    if (!response) {
-      setLoaderState.close();
-      return;
-    }
-
-    if (response === EAuthState.MfaRequired) {
-      setMfaRequired(true);
-      dispatch(setMfaEnabled(true));
-      setLoaderState.close();
-      return;
-    } else if (mfa.totpCode) {
-      dispatch(setTotpCode(null));
-    }
-
-    const jsonResponse = await (response as Response).json();
-    localStorage.setItem(LOCAL_STORAGE.LAST_EMAIL, email);
-
-    const localization: string = jsonResponse.localization;
-    const is12Hours: boolean = jsonResponse.is12Hours;
-    const inactiveMinutes: number = jsonResponse.inactiveMinutes;
-    const username: string = jsonResponse.username;
-
-    sendSuccessNotification(t('notifications:successful'));
-    authSignIn(email, username, localization, is12Hours, inactiveMinutes);
-    navigate(ROUTER_PATH.MENU);
-    setMfaRequired(false);
   };
 
   const resetEmail = () => {
     localStorage.removeItem(LOCAL_STORAGE.LAST_EMAIL);
-    form.setFieldValue('email', '');
+    form.setFieldValue("email", "");
+    setApproveMode(false);
   };
 
   return (
-    <Container size={isMobile ? 'xs' : 'sm'} mt={isMobile ? '2rem' : '4rem'}>
-      <LoadingOverlay
-        visible={loaderVisible}
-        zIndex={1000}
-        overlayProps={{ radius: 'sm', blur: 2 }}
-        loaderProps={{ color: 'blue' }}
-      />
-      <Image
-        src={'/logo.svg'}
-        style={{
-          maxWidth: isMobile ? '80%' : 'fit-content',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          marginBottom: isMobile ? '1.5rem' : '3rem',
-        }}
-        h={isMobile ? 100 : 140}
-        w='auto'
-        fit='contain'
-        alt={'Immortal Vault'}
-        onClick={() => navigate(ROUTER_PATH.ROOT)}
-      />
-      <Title order={1} ta='center' size={isMobile ? 'h3' : 'h1'}>
-        {t('signIn.title')}
-      </Title>
-      <Title order={2} ta='center' mb={'xl'} size={isMobile ? 'h4' : 'h2'}>
-        {isApproveMode ? t('signIn.exists', { user: form.values.email }) : t('signIn.desc')}
-      </Title>
+    <Paper
+      w={420}
+      mx="auto"
+      mt={100}
+      p="xl"
+      radius="lg"
+      shadow="xl"
+      withBorder
+      style={{
+        background: "linear-gradient(180deg, #141414 0%, #1b1b1b 100%)",
+        color: "#e0e0e0",
+        borderColor: "#2c2c2c",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <Stack align="center" mb="xl">
+        <Logo size={100} />
+        <Title order={2} ta="center" c="gray.1">
+          {t("signIn.title")}
+        </Title>
+        <Text ta="center" size="sm" c="dimmed">
+          {approveMode
+            ? t("signIn.exists", { user: form.values.email })
+            : t("signIn.desc")}
+        </Text>
+      </Stack>
 
-      <form onSubmit={signInUser}>
-        <Stack align={'center'} justify={'center'}>
-          {!isApproveMode && (
-            <TextInput
-              required
-              type={'text'}
-              label={t('signIn.fields.emailOrUsername.title')}
-              placeholder={'johndoe@gmail.com'}
-              value={form.values.email}
-              onChange={(event) => form.setFieldValue('email', event.currentTarget.value)}
-              error={form.errors.email && t(form.errors.email.toString())}
-              radius='md'
-              w={'90%'}
-            />
-          )}
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack gap="sm">
+          <Transition mounted={!approveMode} transition="fade" duration={200} timingFunction="ease">
+            {(styles) => (
+              <div style={styles}>
+                {!approveMode && (
+                  <TextInput
+                    label={t("signIn.fields.emailOrUsername.title")}
+                    placeholder="you@mail.com"
+                    variant="filled"
+                    radius="sm"
+                    withAsterisk
+                    {...form.getInputProps("email")}
+                  />
+                )}
+              </div>
+            )}
+          </Transition>
 
-          <PasswordInputWithCapsLock
-            required
-            label={t('signIn.fields.password.title')}
-            value={form.values.password}
-            onChange={(event) => form.setFieldValue('password', event.currentTarget.value)}
-            error={form.errors.password && t(form.errors.password.toString())}
-            radius='md'
-            style={{ flex: 1 }}
-            w={'90%'}
+          <PasswordInput
+            ref={passwordRef}
+            label={t("signIn.fields.password.title")}
+            placeholder="******"
+            variant="filled"
+            radius="sm"
+            withAsterisk
+            {...form.getInputProps("password")}
           />
 
-          {mfaRequired && (
-            <TextInput
-              required
-              placeholder={t('auth:mfa.totpPlaceholder')}
-              label={t('auth:mfa.totpLabel')}
-              value={mfa.totpCode ?? ''}
-              radius='md'
-              style={{ flex: 1 }}
-              w={'90%'}
-              onChange={(event) => {
-                if (event.currentTarget.value.length > 6) {
-                  return;
-                }
-
-                dispatch(setTotpCode(event.currentTarget.value));
-              }}
-            />
-          )}
-
-          <Group justify='space-between' w={'90%'}>
-            <Anchor
-              component='button'
-              type='button'
-              c='dimmed'
-              underline={'never'}
-              size={isMobile ? 'lg' : 'xl'}
-              onClick={isApproveMode ? resetEmail : () => navigate(ROUTER_PATH.SIGN_UP)}
-            >
-              {isApproveMode ? t('signIn.anotherAccount') : t('signIn.doNotHaveAccount')}
-              &nbsp;
-              <Anchor
-                component='button'
-                type='button'
-                underline={'never'}
-                c='blue'
-                size={isMobile ? 'lg' : 'xl'}
-              >
-                {isApproveMode ? t('signOut.title') : t('signUp.title')}
-              </Anchor>
-            </Anchor>
-            <Button type='submit'>{t('signIn.title')}</Button>
+          <Transition mounted={mfaRequired} transition="fade" duration={200}>
+            {(styles) => (
+              <div style={styles}>
+                {mfaRequired && (
+                  <TextInput
+                    label={t("auth:mfa.totpLabel")}
+                    placeholder={t("auth:mfa.totpPlaceholder")}
+                    variant="filled"
+                    radius="sm"
+                    value={mfa.totpCode ?? ""}
+                    onChange={(e) => {
+                      if (e.currentTarget.value.length > 6) return;
+                      dispatch(setTotpCode(e.currentTarget.value));
+                    }}
+                  />
+                )}
+              </div>
+            )}
+          </Transition>
+          <Group gap={4} mt={4}>
+            {approveMode ? (
+              <>
+                <Text span size="sm" c="gray.5" style={{ userSelect: "none" }}>
+                  {t("signIn.anotherAccount")}&nbsp;
+                </Text>
+                <Anchor
+                  size="sm"
+                  c="blue.4"
+                  style={{ cursor: "pointer", textDecoration: "none" }}
+                  onClick={resetEmail}
+                >
+                  {t("signOut.title")}
+                </Anchor>
+              </>
+            ) : (
+              <>
+                <Text span size="sm" c="gray.5" style={{ userSelect: "none" }}>
+                  {t("signIn.doNotHaveAccount")}&nbsp;
+                </Text>
+                <Anchor
+                  size="sm"
+                  c="blue.4"
+                  style={{ cursor: "pointer", textDecoration: "none" }}
+                  onClick={() => navigate(ROUTER_PATH.SIGN_UP, { replace: true })}
+                >
+                  {t("signUp.title")}
+                </Anchor>
+              </>
+            )}
           </Group>
+
+          <Divider my="xs" color="gray.8" />
+
+          <Button
+            type="submit"
+            fullWidth
+            mt="sm"
+            radius="sm"
+            loading={loading}
+            disabled={!form.isValid()}
+          >
+            {t("signIn.title")}
+          </Button>
         </Stack>
       </form>
-    </Container>
+
+      <Text ta="center" size="sm" mt="lg" c="gray.5">
+        <Anchor
+          size="sm"
+          c="blue.4"
+          onClick={() => navigate(ROUTER_PATH.FORGOT, { replace: true })}
+          style={{ cursor: "pointer" }}
+        >
+          {t("signIn.forgotPassword")}
+        </Anchor>
+      </Text>
+    </Paper>
   );
 }

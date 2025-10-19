@@ -28,6 +28,7 @@ import {
   setGoogleDriveStateFetched,
   setInactiveMinutes,
   setIs12HoursFormat,
+  setIsEmailVerified,
   setMfaEnabled,
   setSecretPassword,
 } from './slices';
@@ -150,6 +151,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const user = await response.json();
         dispatch(setAuthState(EAuthState.Authorized));
         dispatch(setAuthEmail(user.email));
+        dispatch(setIsEmailVerified(user.isEmailVerified ?? false));
         dispatch(setAuthUsername(user.name));
         dispatch(setInactiveMinutes(user.userSettings?.inactiveMinutes ?? 10));
         dispatch(setIs12HoursFormat(user.userSettings?.is12HoursFormat ?? false));

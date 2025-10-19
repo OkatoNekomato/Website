@@ -11,6 +11,7 @@ type TAuthStore = {
   secretPasswordModalState: boolean;
   is12HoursFormat: boolean;
   inactiveMinutes: number;
+  isEmailVerified: boolean;
 };
 
 const initialState: TAuthStore = {
@@ -22,6 +23,7 @@ const initialState: TAuthStore = {
   secretPasswordModalState: false,
   is12HoursFormat: false,
   inactiveMinutes: 10,
+  isEmailVerified: false,
 };
 
 const authSlice = createSlice({
@@ -53,11 +55,11 @@ const authSlice = createSlice({
       state.is12HoursFormat = action.payload;
     },
     setInactiveMinutes: (state, action: PayloadAction<number>) => {
-      if (action.payload < 0 || action.payload > 9999) {
-        return;
-      }
-
+      if (action.payload < 0 || action.payload > 9999) return;
       state.inactiveMinutes = action.payload;
+    },
+    setIsEmailVerified: (state, action: PayloadAction<boolean>) => {
+      state.isEmailVerified = action.payload;
     },
   },
 });
@@ -72,6 +74,7 @@ export const {
   closeSecretPasswordModal,
   setIs12HoursFormat,
   setInactiveMinutes,
+  setIsEmailVerified,
 } = authSlice.actions;
 
 export const selectAuth = (state: RootState): TAuthStore => state.auth;
