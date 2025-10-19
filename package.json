@@ -16,6 +16,7 @@
     "@passwordless-id/webauthn": "^2.3.0",
     "@react-oauth/google": "^0.12.1",
     "@reduxjs/toolkit": "^2.5.0",
+    "@tabler/icons-react": "^3.35.0",
     "eslint-config-next": "^14.2.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
