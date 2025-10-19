@@ -199,3 +199,49 @@ export async function getChallenge(
     }
   }
 }
+
+export async function resetPassword(
+  code: string,
+  password: string,
+  envs?: TEnvVars,
+  t?: TFunction
+): Promise<Response | null> {
+  const body = JSON.stringify({ code: code.trim(), password });
+
+  try {
+    const response = await customFetch(
+      `${envs?.API_SERVER_URL}/auth/resetPassword`,
+      body,
+      "POST",
+      t
+    );
+
+    if (!response) {
+      return null;
+    }
+
+    if (response.ok) return response;
+
+    switch (response.status) {
+      case 400:
+        sendErrorNotification(t?.("notifications:invalidCode"));
+        break;
+      case 401:
+        sendErrorNotification(t?.("notifications:unauthorized"));
+        break;
+      case 404:
+        sendErrorNotification(t?.("notifications:userNotFound"));
+        break;
+      case 429:
+        sendErrorNotification(t?.("notifications:tooManyRequests"));
+        break;
+      default:
+        sendErrorNotification(t?.("notifications:failedError"));
+        break;
+    }
+
+    return null;
+  } catch (err) {
+    return null;
+  }
+}
