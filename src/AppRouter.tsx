@@ -19,6 +19,7 @@ import {
 } from './stores';
 import { LoadingOverlay } from '@mantine/core';
 import { EAuthState } from './types';
+import ForgotPassword from './views/auth/ForgotPassword.tsx';
 
 const errorElement = <ErrorPage />;
 
@@ -50,6 +51,14 @@ const appRouter = createBrowserRouter([
       </NonAuthorizedRoute>
     ),
     errorElement,
+  },
+  {
+    path: ROUTER_PATH.FORGOT,
+    element: (
+      <NonAuthorizedRoute>
+        <ForgotPassword/>
+      </NonAuthorizedRoute>
+    )
   },
   {
     path: ROUTER_PATH.MENU,
