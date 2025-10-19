@@ -1,0 +1,42 @@
+{
+  "main": {
+    "title": "Главная",
+    "header": "Основные настройки",
+    "language": {
+      "title": "Язык интерфейса",
+      "placeholder": "Русский...",
+      "nothingFound": "Ничего не найдено"
+    },
+    "timeFormat": {
+      "title": "Формат отображения времени"
+    },
+    "inactiveMinutes": {
+      "title": "Таймаут неактивности",
+      "description": "Укажите количество минут до автоматического выхода",
+      "currentValue": "Текущее значение: {{minutes}} минут",
+      "placeholder": "Введите минуты",
+      "editButton": "Изменить",
+      "saveButton": "Сохранить",
+      "cancelButton": "Отмена"
+    },
+    "password": {
+      "title": "Смена пароля",
+      "description": "Измените текущий пароль",
+      "oldPassword": "Старый пароль",
+      "newPassword": "Новый пароль",
+      "confirmPassword": "Подтвердите пароль",
+      "totpCode": "2FA код",
+      "editButton": "Изменить",
+      "saveButton": "Сохранить",
+      "cancelButton": "Отмена",
+      "invalid": "Пароль должен содержать: 8+ символов, заглавные и строчные буквы, 2+ цифры, без пробелов",
+      "mismatch": "Пароли не совпадают"
+    },
+    "prf": {
+      "title": "Passkey",
+      "add": "Добавить",
+      "delete": "Удалить",
+      "decryptOnce": "Хотя бы раз расшифруйте свои пароли"
+    }
+  }
+}

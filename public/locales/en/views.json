@@ -1,0 +1,19 @@
+{
+  "menu": {
+    "name": "Menu"
+  },
+  "secrets": {
+    "name": "Secrets"
+  },
+  "settings": {
+    "name": "Settings",
+    "subviews": {
+      "main": {
+        "name": "Main"
+      },
+      "vault": {
+        "name": "Vault"
+      }
+    }
+  }
+}

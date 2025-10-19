@@ -1,0 +1,33 @@
+{
+  "serverNotResponding": "Immortal Vault server is down, please try again later",
+  "incorrectLoginOrPassword": "Incorrect login or password",
+  "failedError": "An error has occurred, contact technical support",
+  "successful": "Successful",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "passwordsAreSame": "New and old password are the same",
+  "userAlreadyExists": "User with the same email or username is already exists",
+  "languageChanged": "Language successfully changed to {{language}}",
+  "timeFormatChanged": "Time format successfully changed to {{timeFormat}} hours",
+  "sessionExpired": "Your session has expired, please login",
+  "folder": {
+    "addedSuccessfully": "Folder added successfully",
+    "deletedSuccessfully": "Folder deleted successfully"
+  },
+  "needConnectVault": "You need to connect the vault",
+  "copied": "Copied",
+  "outdatedClient": "Website is outdated, please refresh page",
+  "setupMfaFailed": "Failed to set up multi-factor authentication. Please try again",
+  "requiredMfa": "Multi-factor authentication is required",
+  "incorrectMfaCode": "The provided multi-factor authentication code is incorrect",
+  "invalidTotpCode": "The 2FA code is invalid. Please try again",
+  "mfaSetupNotFound": "2FA setup not found. Please start the setup process again",
+  "invalidCredentialsOrTotpCode": "The provided password or 2FA code is invalid",
+  "mfaDisableForbidden": "You are not allowed to disable multi-factor authentication",
+  "enableMfaSuccess": "2FA enabled successfully",
+  "disableMfaSuccess": "2FA disabled successfully",
+  "validateMfaSuccess": "2FA validation successful",
+  "userNotFound": "User not found",
+  "inactiveValueChanged": "Inactive timeout has been successfully updated",
+  "passwordChanged": "Password has been successfully updated",
+  "inactiveValueIncorrect": "Invalid inactive timeout value. Please enter a number between 1 and 9999"
+}

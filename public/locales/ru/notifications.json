@@ -1,0 +1,33 @@
+{
+  "serverNotResponding": "Immortal Vault сервер недоступен, пожалуйста повторите попытку позже",
+  "incorrectLoginOrPassword": "Неверный логин или пароль",
+  "failedError": "Произошла ошибка, свяжитесь с технической поддержкой",
+  "successful": "Успешно",
+  "passwordsDoNotMatch": "Пароли не совпадают",
+  "passwordsAreSame": "Новый и старый пароль совпадают",
+  "userAlreadyExists": "Пользователь с такой почтой или именем уже существует",
+  "languageChanged": "Язык успешно изменён на {{language}}",
+  "timeFormatChanged": "Формат времени успешно изменен на {{timeFormat}} часовой",
+  "sessionExpired": "Ваша сессия истекла, необходима авторизация",
+  "folder": {
+    "addedSuccessfully": "Папка успешно добавлена",
+    "deletedSuccessfully": "Папка успешно удалена"
+  },
+  "needConnectVault": "Вам необходимо подключить хранилище",
+  "copied": "Скопировано",
+  "outdatedClient": "Веб-сайт устарел, пожалуйста обновите страницу",
+  "setupMfaFailed": "Не удалось настроить двухфакторную аутентификацию. Попробуйте снова",
+  "requiredMfa": "Требуется двухфакторная аутентификация",
+  "incorrectMfaCode": "Указан неправильный код двухфакторной аутентификации",
+  "invalidTotpCode": "Неверный 2FA-код. Попробуйте снова",
+  "mfaSetupNotFound": "Настройка двухфакторной аутентификации не найдена. Начните процесс заново",
+  "invalidCredentialsOrTotpCode": "Неправильный пароль или 2FA-код",
+  "mfaDisableForbidden": "Вам запрещено отключать двухфакторную аутентификацию",
+  "enableMfaSuccess": "2FA успешно включен",
+  "disableMfaSuccess": "2FA успешно отключен",
+  "validateMfaSuccess": "Проверка 2FA прошла успешно",
+  "userNotFound": "Пользователь не найден",
+  "inactiveValueChanged": "Таймаут неактивности успешно обновлён",
+  "passwordChanged": "Пароль успешно обновлён",
+  "inactiveValueIncorrect": "Некорректное значение таймаута. Введите число от 1 до 9999"
+}

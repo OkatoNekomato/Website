@@ -1,0 +1,42 @@
+{
+  "main": {
+    "title": "Main",
+    "header": "Main settings",
+    "language": {
+      "title": "Interface language",
+      "placeholder": "English...",
+      "nothingFound": "Nothing found"
+    },
+    "timeFormat": {
+      "title": "Time display format"
+    },
+    "inactiveMinutes": {
+      "title": "Inactive timeout",
+      "description": "Set the number of minutes before automatic logout",
+      "currentValue": "Current value: {{minutes}} minutes",
+      "placeholder": "Enter minutes",
+      "editButton": "Edit",
+      "saveButton": "Save",
+      "cancelButton": "Cancel"
+    },
+    "password": {
+      "title": "Change Password",
+      "description": "Edit current password",
+      "oldPassword": "Old Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "totpCode": "2FA Code",
+      "editButton": "Edit",
+      "saveButton": "Save",
+      "cancelButton": "Cancel",
+      "invalid": "Password must contain: 8+ chars, uppercase, lowercase, 2+ digits, no spaces",
+      "mismatch": "Passwords do not match"
+    },
+    "prf": {
+      "title": "Passkey",
+      "add": "Add",
+      "delete": "Delete",
+      "decryptOnce": "For once, decipher your passwords"
+    }
+  }
+}
