@@ -40,7 +40,7 @@ export function RootFeature() {
   ));
 
   return (
-    <Container size='lg' py='xl'>
+    <Container size='lg' pb='44'>
       <Title order={2} className={classes.title} ta='center'>
         {t('features.title')}
       </Title>
