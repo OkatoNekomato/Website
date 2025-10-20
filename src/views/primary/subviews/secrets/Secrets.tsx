@@ -1,19 +1,19 @@
 import { FormEvent, useEffect, useState } from 'react';
 import {
   Button,
-  Divider,
   FileInput,
   Flex,
-  Grid,
   Group,
   Input,
-  List,
   Modal,
   Select,
   TagsInput,
   Text,
   Textarea,
   TextInput,
+  Paper,
+  Box,
+  Stack,
 } from '@mantine/core';
 import {
   TEnpassField,
@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { useDisclosure } from '@mantine/hooks';
 import { v7 as uuid } from 'uuid';
 import { useForm } from '@mantine/form';
-import { getProperty, mapValuesToSecretProperties, trimText } from '../../../../shared';
+import { getProperty, mapValuesToSecretProperties } from '../../../../shared';
 import { PasswordInputWithCapsLock } from '../../../../components';
 
 export const Secrets = () => {
@@ -51,8 +51,8 @@ export const Secrets = () => {
 
   const secretsToRender = selectedFolder
     ? (filteredSecrets ?? []).filter((s) =>
-        s.folders?.value?.map((f) => f).includes(selectedFolder.id),
-      )
+      s.folders?.value?.map((f) => f).includes(selectedFolder.id),
+    )
     : filteredSecrets;
 
   const addSecretForm = useForm({
@@ -188,29 +188,75 @@ export const Secrets = () => {
     }
   };
 
+  const getSecretWidth = (secret: TSecret) => {
+    const label = secret.label?.value || '';
+    const username = secret?.username?.value || secret?.email?.value || '';
+    const totalLength = label.length + username.length;
+
+    if (totalLength < 20) return '200px';
+    if (totalLength < 35) return '250px';
+    if (totalLength < 50) return '320px';
+    return '100%';
+  };
+
+  const modalStyles = {
+    content: {
+      background: 'rgba(24, 24, 27, 0.95)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(70, 70, 80, 0.4)',
+    },
+    header: {
+      background: 'transparent',
+    },
+  };
+
+  const inputStyles = {
+    input: {
+      background: 'rgba(40, 40, 50, 0.5)',
+      border: '1px solid rgba(70, 70, 80, 0.3)',
+      color: '#e4e4e7',
+      '&:focus': {
+        border: '1px solid rgba(100, 149, 237, 0.5)',
+      },
+    },
+    label: {
+      color: '#a1a1aa',
+      marginBottom: '8px',
+    },
+  };
+
   return (
     <>
       <Modal
         centered={true}
         opened={addModalState}
         onClose={closeAddModal}
-        size='xs'
-        title={t('modals.addSecret.title')}
+        size="lg"
+        title={
+          <Text size="lg" fw={600} c="gray.0">
+            {t('modals.addSecret.title')}
+          </Text>
+        }
         closeOnClickOutside={false}
         closeOnEscape={false}
         withCloseButton={false}
         overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
+          backgroundOpacity: 0.7,
+          blur: 8,
         }}
+        styles={modalStyles}
       >
         <form onSubmit={addSecret}>
-          <Flex direction={'column'} gap={'md'}>
+          <Stack gap="md">
             <TextInput
               label={t('fields.label.title')}
               value={addSecretForm.values.label}
               onChange={(event) => addSecretForm.setFieldValue('label', event.currentTarget.value)}
               error={addSecretForm.errors.label && t(addSecretForm.errors.label.toString())}
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={inputStyles}
             />
             <TextInput
               label={t('fields.username.title')}
@@ -218,12 +264,20 @@ export const Secrets = () => {
               onChange={(event) =>
                 addSecretForm.setFieldValue('username', event.currentTarget.value)
               }
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={inputStyles}
             />
             <TextInput
               label={t('fields.email.title')}
               value={addSecretForm.values.email}
               onChange={(event) => addSecretForm.setFieldValue('email', event.currentTarget.value)}
               type={'email'}
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={inputStyles}
             />
             <PasswordInputWithCapsLock
               label={t('fields.password.title')}
@@ -239,22 +293,39 @@ export const Secrets = () => {
               }}
               label={t('fields.website.title')}
               clearable
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={inputStyles}
             />
             <TextInput
               label={t('fields.phone.title')}
               type={'phone'}
               value={addSecretForm.values.phone}
               onChange={(event) => addSecretForm.setFieldValue('phone', event.currentTarget.value)}
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={inputStyles}
             />
             <TextInput
               label={t('fields.mfa.title')}
               value={addSecretForm.values.mfa}
               onChange={(event) => addSecretForm.setFieldValue('mfa', event.currentTarget.value)}
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={inputStyles}
             />
             <Textarea
               label={t('fields.notes.title')}
               value={addSecretForm.values.notes}
               onChange={(event) => addSecretForm.setFieldValue('notes', event.currentTarget.value)}
+              variant="filled"
+              radius="md"
+              minRows={3}
+              size="md"
+              styles={inputStyles}
             />
 
             {folders.length > 0 && (
@@ -269,12 +340,19 @@ export const Secrets = () => {
 
                   addSecretForm.setFieldValue('folder', value);
                 }}
+                variant="filled"
+                radius="md"
+                size="md"
+                styles={inputStyles}
               />
             )}
-          </Flex>
+          </Stack>
 
-          <Group mt='xl' justify={'end'}>
+          <Group mt="xl" justify="end">
             <Button
+              radius="md"
+              variant="subtle"
+              color="gray"
               onClick={() => {
                 closeAddModal();
                 addSecretForm.reset();
@@ -282,7 +360,9 @@ export const Secrets = () => {
             >
               {t('modals.addSecret.buttons.cancel')}
             </Button>
-            <Button type={'submit'}>{t('modals.addSecret.buttons.submit')}</Button>
+            <Button type="submit" radius="md">
+              {t('modals.addSecret.buttons.submit')}
+            </Button>
           </Group>
         </form>
       </Modal>
@@ -290,28 +370,40 @@ export const Secrets = () => {
         centered={true}
         opened={importModalState}
         onClose={closeImportModal}
-        size='auto'
-        title={t('modals.importSecrets.title')}
+        size="md"
+        title={
+          <Text size="lg" fw={600} c="gray.0">
+            {t('modals.importSecrets.title')}
+          </Text>
+        }
         closeOnClickOutside={false}
         closeOnEscape={false}
         withCloseButton={false}
         overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
+          backgroundOpacity: 0.7,
+          blur: 8,
         }}
+        styles={modalStyles}
       >
-        <Flex direction={'column'} gap={'md'}>
+        <Stack gap="md">
           <FileInput
             label={t('modals.importSecrets.fileInput.label')}
             placeholder={t('modals.importSecrets.fileInput.placeholder')}
             multiple={false}
             value={importedSecretFile}
             onChange={setImportedSecretFile}
+            variant="filled"
+            radius="md"
+            size="md"
+            styles={inputStyles}
           />
-        </Flex>
+        </Stack>
 
-        <Group mt='xl' justify={'end'}>
+        <Group mt="xl" justify="end">
           <Button
+            radius="md"
+            variant="subtle"
+            color="gray"
             onClick={() => {
               closeImportModal();
               setImportedSecretFile(null);
@@ -320,6 +412,7 @@ export const Secrets = () => {
             {t('modals.importSecrets.buttons.cancel')}
           </Button>
           <Button
+            radius="md"
             onClick={async () => {
               await importSecrets();
               closeImportModal();
@@ -330,63 +423,108 @@ export const Secrets = () => {
           </Button>
         </Group>
       </Modal>
-      <Grid grow>
-        <Grid.Col span={3} style={{ height: '100%', paddingRight: '20px' }}>
-          <Input
-            placeholder={t('search.placeholder')}
-            mb={'md'}
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.currentTarget.value)}
-          />
-          <Flex gap={'md'}>
-            <Button
-              mb={'md'}
-              fullWidth
-              onClick={() => {
-                addSecretForm.values.folder = selectedFolder ? selectedFolder.id : null;
-                openAddModal();
-              }}
-            >
-              {t('buttons.add')}
-            </Button>
-            <Button mb={'md'} fullWidth onClick={openImportModal}>
-              {t('buttons.import')}
-            </Button>
+      <Box>
+        <Input
+          placeholder={t('search.placeholder')}
+          mb="md"
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.currentTarget.value)}
+          variant="filled"
+          radius="md"
+          size="md"
+          styles={{
+            input: {
+              background: 'rgba(40, 40, 50, 0.5)',
+              border: '1px solid rgba(70, 70, 80, 0.3)',
+              color: '#e4e4e7',
+              '&::placeholder': {
+                color: '#71717a',
+              },
+              '&:focus': {
+                border: '1px solid rgba(100, 149, 237, 0.5)',
+              },
+            },
+          }}
+        />
+        <Flex gap="md" mb="lg">
+          <Button
+            fullWidth
+            radius="md"
+            size="md"
+            onClick={() => {
+              addSecretForm.values.folder = selectedFolder ? selectedFolder.id : null;
+              openAddModal();
+            }}
+          >
+            {t('buttons.add')}
+          </Button>
+          <Button fullWidth radius="md" size="md" variant="light" onClick={openImportModal}>
+            {t('buttons.import')}
+          </Button>
+        </Flex>
+        <Text size="sm" c="dimmed" mb="md" fw={500}>
+          {t('elements.title')}: {(secretsToRender ?? []).length}
+        </Text>
+        {(secretsToRender ?? [])?.length > 0 ? (
+          <Flex wrap="wrap" gap="md" justify="flex-start">
+            {(secretsToRender ?? []).map((secret) => (
+              <Paper
+                key={secret.id}
+                p="md"
+                radius="md"
+                style={{
+                  cursor: 'pointer',
+                  background:
+                    selectedSecret?.id === secret.id
+                      ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%)'
+                      : 'rgba(39, 39, 42, 0.5)',
+                  border: `1px solid ${selectedSecret?.id === secret.id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(70, 70, 80, 0.3)'}`,
+                  transition: 'all 0.2s ease',
+                  minHeight: '80px',
+                  minWidth: getSecretWidth(secret),
+                  maxWidth: '100%',
+                  flex: '1 1 auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+                onClick={() => {
+                  setSelectedSecret(secret);
+                }}
+              >
+                <Text
+                  size="sm"
+                  fw={600}
+                  c={selectedSecret?.id === secret.id ? 'blue.4' : 'gray.0'}
+                  mb={4}
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {secret.label?.value}
+                </Text>
+                <Text
+                  size="xs"
+                  c={selectedSecret?.id === secret.id ? 'blue.5' : 'dimmed'}
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {secret?.username?.value || secret?.email?.value || ''}
+                </Text>
+              </Paper>
+            ))}
           </Flex>
-          <Text size='lg' c='gray' mb='md'>
-            {t('elements.title')}: {(secretsToRender ?? []).length}
+        ) : (
+          <Text c="dimmed" size="sm" ta="center" py="xl">
+            {t('elements.notFound')}
           </Text>
-          <List spacing='md'>
-            {(secretsToRender ?? [])?.length > 0 ? (
-              (secretsToRender ?? []).map((secret, index) => (
-                <>
-                  <List.Item
-                    key={secret.id}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => {
-                      setSelectedSecret(secret);
-                    }}
-                  >
-                    <Group align='center' justify='space-between'>
-                      <div>
-                        <Text size='sm' c={selectedSecret?.id === secret.id ? 'blue' : 'white'}>
-                          {trimText(secret.label?.value, 60)}
-                        </Text>
-                        <Text size='xs' c={selectedSecret?.id === secret.id ? 'blue' : 'gray'}>
-                          {trimText(secret?.username?.value ?? secret?.email?.value ?? '', 70)}
-                        </Text>
-                      </div>
-                    </Group>
-                  </List.Item>
-                  {index != (secretsToRender ?? []).length - 1 && <Divider my={'md'} />}
-                </>
-              ))
-            ) : (
-              <Text>{t('elements.notFound')}</Text>
-            )}
-          </List>
-        </Grid.Col>
-      </Grid>
+        )}
+      </Box>
     </>
   );
 };

@@ -1,24 +1,38 @@
-import { FormEvent, useState } from 'react';
-import { Button, Card, Group, LoadingOverlay, Stack, TextInput, Title } from '@mantine/core';
-import { useTranslation } from 'react-i18next';
-import { useMediaQuery } from '@mantine/hooks';
-import passwordValidator from 'password-validator';
-import { sendErrorNotification } from '../shared';
-import { selectAuth, selectEnvVars, useAppSelector, useAuth } from '../stores';
-import { changePassword } from '../api';
-import { PasswordInputWithCapsLock } from './PasswordInputWithCapsLock.tsx';
+import { FormEvent, useState } from "react";
+import {
+  Button,
+  Card,
+  Group,
+  LoadingOverlay,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { useTranslation } from "react-i18next";
+import { useMediaQuery } from "@mantine/hooks";
+import passwordValidator from "password-validator";
+import { sendErrorNotification } from "../shared";
+import {
+  selectAuth,
+  selectEnvVars,
+  useAppSelector,
+  useAuth,
+} from "../stores";
+import { changePassword } from "../api";
+import { PasswordInputWithCapsLock } from "./PasswordInputWithCapsLock.tsx";
 
 export const PasswordEditor = (): JSX.Element => {
   const { t } = useTranslation();
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const auth = useAuth();
   const { envs } = useAppSelector(selectEnvVars);
   const { isMfaEnabled } = useAppSelector(selectAuth);
 
-  const [oldPwd, setOldPwd] = useState('');
-  const [newPwd, setNewPwd] = useState('');
-  const [confirmPwd, setConfirmPwd] = useState('');
-  const [totpCode, setTotpCode] = useState('');
+  const [oldPwd, setOldPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [totpCode, setTotpCode] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,7 +53,9 @@ export const PasswordEditor = (): JSX.Element => {
       .not()
       .spaces();
 
-    return schema.validate(password) ? null : t('settings:main.password.invalid');
+    return schema.validate(password)
+      ? null
+      : t("settings:main.password.invalid");
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -47,7 +63,7 @@ export const PasswordEditor = (): JSX.Element => {
     setIsLoading(true);
 
     if (newPwd !== confirmPwd) {
-      sendErrorNotification(t('notifications:passwordsDoNotMatch'));
+      sendErrorNotification(t("notifications:passwordsDoNotMatch"));
       setIsLoading(false);
       return;
     }
@@ -60,14 +76,19 @@ export const PasswordEditor = (): JSX.Element => {
     }
 
     if (isMfaEnabled && totpCode.length !== 6) {
-      sendErrorNotification(t('notifications:requiredMfa'));
+      sendErrorNotification(t("notifications:requiredMfa"));
       setIsLoading(false);
       return;
     }
 
-    const response = await changePassword(oldPwd, newPwd, totpCode || null, envs, t, auth).catch(
-      () => setIsLoading(false),
-    );
+    const response = await changePassword(
+      oldPwd,
+      newPwd,
+      totpCode || null,
+      envs,
+      t,
+      auth
+    ).catch(() => setIsLoading(false));
 
     if (!response) {
       setIsLoading(false);
@@ -83,10 +104,10 @@ export const PasswordEditor = (): JSX.Element => {
   };
 
   const resetForm = () => {
-    setOldPwd('');
-    setNewPwd('');
-    setConfirmPwd('');
-    setTotpCode('');
+    setOldPwd("");
+    setNewPwd("");
+    setConfirmPwd("");
+    setTotpCode("");
   };
 
   const handleCancel = () => {
@@ -95,34 +116,51 @@ export const PasswordEditor = (): JSX.Element => {
   };
 
   return (
-    <Card shadow='xl' padding='lg' radius='md' style={{ width: isMobile ? '80vw' : '460px' }}>
+    <Card
+      withBorder
+      radius="md"
+      p="xl"
+      style={{
+        backgroundColor: "#141416",
+        border: "1px solid #2c2c2f",
+        boxShadow: "0 0 20px rgba(0, 102, 255, 0.08)",
+      }}
+    >
       <form onSubmit={handleSubmit}>
-        <Stack gap='xs'>
+        <Stack gap="md">
           <LoadingOverlay
             visible={isLoading}
             zIndex={1000}
-            overlayProps={{ radius: 'sm', blur: 2 }}
+            overlayProps={{ radius: "sm", blur: 2 }}
           />
 
-          <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }}>
-            {t('settings:main.password.title')}
+          <Title
+            order={isMobile ? 4 : 3}
+            ta="center"
+            style={{
+              color: "#f2f2f2",
+              fontWeight: 600,
+              letterSpacing: "0.02em",
+            }}
+          >
+            {t("settings:main.password.title")}
           </Title>
 
           {!isEditing ? (
-            <Title order={6} style={{ textAlign: 'center' }}>
-              {t('settings:main.password.description')}
-            </Title>
+            <Text ta="center" size="sm" c="gray.5">
+              {t("settings:main.password.description")}
+            </Text>
           ) : (
             <>
               <PasswordInputWithCapsLock
-                label={t('settings:main.password.oldPassword')}
+                label={t("settings:main.password.oldPassword")}
                 value={oldPwd}
                 onChange={(e) => setOldPwd(e.currentTarget.value)}
                 required
               />
 
               <PasswordInputWithCapsLock
-                label={t('settings:main.password.newPassword')}
+                label={t("settings:main.password.newPassword")}
                 value={newPwd}
                 onChange={(e) => setNewPwd(e.currentTarget.value)}
                 error={newPwd && validatePassword(newPwd)}
@@ -130,42 +168,59 @@ export const PasswordEditor = (): JSX.Element => {
               />
 
               <PasswordInputWithCapsLock
-                label={t('settings:main.password.confirmPassword')}
+                label={t("settings:main.password.confirmPassword")}
                 value={confirmPwd}
                 onChange={(e) => setConfirmPwd(e.currentTarget.value)}
                 error={
-                  confirmPwd && newPwd !== confirmPwd ? t('settings:main.password.mismatch') : null
+                  confirmPwd && newPwd !== confirmPwd
+                    ? t("settings:main.password.mismatch")
+                    : null
                 }
                 required
               />
 
               {isMfaEnabled && (
                 <TextInput
-                  label={t('settings:main.password.totpCode')}
+                  label={t("settings:main.password.totpCode")}
                   value={totpCode}
                   onChange={(e) => setTotpCode(e.currentTarget.value)}
                   required
-                  error={
-                    totpCode && totpCode.length !== 6 ? t('auth:mfa.validateInstruction') : null
-                  }
-                  placeholder='123456'
+                  placeholder="123456"
+                  styles={{
+                    input: {
+                      backgroundColor: "#1b1c1f",
+                      borderColor: "#2d2e32",
+                      color: "#f2f2f2",
+                    },
+                  }}
                 />
               )}
             </>
           )}
 
-          <Group justify='space-between'>
+          <Group grow>
             {!isEditing ? (
-              <Button fullWidth onClick={() => setIsEditing(true)}>
-                {t('settings:main.password.editButton')}
+              <Button
+                fullWidth
+                color="blue"
+                radius="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                {t("settings:main.password.editButton")}
               </Button>
             ) : (
               <>
-                <Button fullWidth type='submit' color='green'>
-                  {t('settings:main.password.saveButton')}
+                <Button type="submit" color="blue" radius="sm" fullWidth>
+                  {t("settings:main.password.saveButton")}
                 </Button>
-                <Button fullWidth color='red' onClick={handleCancel}>
-                  {t('settings:main.password.cancelButton')}
+                <Button
+                  color="gray"
+                  radius="sm"
+                  variant="light"
+                  fullWidth
+                  onClick={handleCancel}
+                >
+                  {t("settings:main.password.cancelButton")}
                 </Button>
               </>
             )}

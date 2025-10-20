@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { ROUTER_PATH, sendNotification } from '../../shared';
 import { useTranslation } from 'react-i18next';
 import { Footer, PrimaryHeader, Secret } from '../../components';
-import { Container, Drawer, Grid, ScrollArea, Text } from '@mantine/core';
+import { Container, Drawer, Grid, ScrollArea, Text, Paper, Box } from '@mantine/core';
 import { Secrets } from './subviews';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { Folders } from './subviews/folders';
@@ -84,14 +84,30 @@ export function Primary() {
           }}
         />
       ) : (
-        <Text c='gray'>{t('secrets:unselectedSecretPlaceholder')}</Text>
+        <Paper
+          p="xl"
+          radius="lg"
+          style={{
+            background: 'rgba(30, 30, 35, 0.6)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(70, 70, 80, 0.3)',
+            minHeight: '400px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text c="dimmed" size="lg" ta="center" fw={500}>
+            {t('secrets:unselectedSecretPlaceholder')}
+          </Text>
+        </Paper>
       )}
     </>
   );
 
   const getMobileLayout = () => (
     <>
-      <ScrollArea h={'calc(100vh - 200px)'} type='always' scrollbars='y' offsetScrollbars>
+      <ScrollArea h={'calc(100vh - 200px)'} type="always" scrollbars="y" offsetScrollbars>
         <Folders
           allElementsButtonClick={() => {
             openFoldersDrawer();
@@ -105,8 +121,16 @@ export function Primary() {
           setSelectedSecret(null);
           setSelectedFolder(null);
         }}
-        position='bottom'
-        size='100%'
+        position="bottom"
+        size="100%"
+        styles={{
+          content: {
+            background: '#18181b',
+          },
+          header: {
+            background: 'transparent',
+          },
+        }}
       >
         <Secrets />
       </Drawer>
@@ -117,8 +141,16 @@ export function Primary() {
           setSelectedSecret(null);
           setSelectedFolder(null);
         }}
-        position='bottom'
-        size='100%'
+        position="bottom"
+        size="100%"
+        styles={{
+          content: {
+            background: '#18181b',
+          },
+          header: {
+            background: 'transparent',
+          },
+        }}
       >
         {getSecretSection()}
       </Drawer>
@@ -126,47 +158,41 @@ export function Primary() {
   );
 
   const getLayout = () => (
-    <Grid>
-      <Grid.Col
-        span={2}
-        style={{
-          borderRight: '1px solid #424242',
-        }}
-      >
-        <ScrollArea h={'calc(100vh - 200px)'} type='always' scrollbars='y' offsetScrollbars>
-          <Folders />
-        </ScrollArea>
-      </Grid.Col>
-      <Grid.Col
-        span={3}
-        style={{
-          borderRight: '1px solid #424242',
-        }}
-      >
-        <div
+    <Grid gutter="lg">
+      <Grid.Col span={2}>
+        <Paper
+          p="lg"
+          radius="lg"
           style={{
-            marginLeft: '10px',
+            background: 'rgba(30, 30, 35, 0.6)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(70, 70, 80, 0.3)',
+            height: 'calc(100vh - 180px)',
           }}
         >
-          <ScrollArea h={'calc(100vh - 200px)'} type='always' scrollbars='y' offsetScrollbars>
+          <ScrollArea h={'100%'} type="auto" scrollbars="y" offsetScrollbars>
+            <Folders />
+          </ScrollArea>
+        </Paper>
+      </Grid.Col>
+      <Grid.Col span={4}>
+        <Paper
+          p="lg"
+          radius="lg"
+          style={{
+            background: 'rgba(30, 30, 35, 0.6)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(70, 70, 80, 0.3)',
+            height: 'calc(100vh - 180px)',
+          }}
+        >
+          <ScrollArea h={'100%'} type="auto" scrollbars="y" offsetScrollbars>
             <Secrets />
           </ScrollArea>
-        </div>
+        </Paper>
       </Grid.Col>
-      <Grid.Col
-        span={7}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            padding: '0.2% 2%',
-          }}
-        >
-          {getSecretSection()}
-        </div>
+      <Grid.Col span={6}>
+        <Box>{getSecretSection()}</Box>
       </Grid.Col>
     </Grid>
   );
@@ -178,7 +204,7 @@ export function Primary() {
   return (
     <>
       <PrimaryHeader />
-      <Container fluid mb='xl'>
+      <Container fluid px="xl" py="lg">
         {getContent()}
       </Container>
       <Footer />

@@ -2,16 +2,16 @@ import { FormEvent, useEffect, useState } from 'react';
 import {
   Button,
   ComboboxItem,
-  Divider,
   Flex,
-  Grid,
   Group,
   Input,
-  List,
+  Stack,
   Modal,
   Select,
   Text,
   TextInput,
+  Paper,
+  Box,
 } from '@mantine/core';
 import { TFolder } from '../../../../types';
 import { selectSecrets, useAppSelector, useSecrets } from '../../../../stores';
@@ -121,28 +121,62 @@ export const Folders = ({ allElementsButtonClick }: FoldersProps) => {
         centered={true}
         opened={addModalState}
         onClose={closeAddModal}
-        size='auto'
-        title={t('modals.addFolder.title')}
+        size="md"
+        title={
+          <Text size="lg" fw={600} c="gray.0">
+            {t('modals.addFolder.title')}
+          </Text>
+        }
         closeOnClickOutside={false}
         closeOnEscape={false}
         withCloseButton={false}
         overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
+          backgroundOpacity: 0.7,
+          blur: 8,
+        }}
+        styles={{
+          content: {
+            background: 'rgba(24, 24, 27, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(70, 70, 80, 0.4)',
+          },
+          header: {
+            background: 'transparent',
+          },
         }}
       >
         <form onSubmit={addFolder}>
-          <Flex direction={'column'} gap={'md'}>
+          <Stack gap="md">
             <TextInput
               label={t('fields.label.title')}
               value={addFolderForm.values.label}
               onChange={(event) => addFolderForm.setFieldValue('label', event.currentTarget.value)}
               error={addFolderForm.errors.label && t(addFolderForm.errors.label.toString())}
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={{
+                input: {
+                  background: 'rgba(40, 40, 50, 0.5)',
+                  border: '1px solid rgba(70, 70, 80, 0.3)',
+                  color: '#e4e4e7',
+                  '&:focus': {
+                    border: '1px solid rgba(100, 149, 237, 0.5)',
+                  },
+                },
+                label: {
+                  color: '#a1a1aa',
+                  marginBottom: '8px',
+                },
+              }}
             />
-          </Flex>
+          </Stack>
 
-          <Group mt='xl' justify={'end'}>
+          <Group mt="xl" justify="end">
             <Button
+              radius="md"
+              variant="subtle"
+              color="gray"
               onClick={() => {
                 closeAddModal();
                 addFolderForm.reset();
@@ -150,7 +184,9 @@ export const Folders = ({ allElementsButtonClick }: FoldersProps) => {
             >
               {t('modals.addFolder.buttons.cancel')}
             </Button>
-            <Button type={'submit'}>{t('modals.addFolder.buttons.submit')}</Button>
+            <Button type="submit" radius="md">
+              {t('modals.addFolder.buttons.submit')}
+            </Button>
           </Group>
         </form>
       </Modal>
@@ -158,18 +194,32 @@ export const Folders = ({ allElementsButtonClick }: FoldersProps) => {
         centered={true}
         opened={deleteModalState}
         onClose={closeDeleteModal}
-        size='auto'
-        title={t('modals.deleteFolder.title')}
+        size="md"
+        title={
+          <Text size="lg" fw={600} c="gray.0">
+            {t('modals.deleteFolder.title')}
+          </Text>
+        }
         closeOnClickOutside={false}
         closeOnEscape={false}
         withCloseButton={false}
         overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
+          backgroundOpacity: 0.7,
+          blur: 8,
+        }}
+        styles={{
+          content: {
+            background: 'rgba(24, 24, 27, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(70, 70, 80, 0.4)',
+          },
+          header: {
+            background: 'transparent',
+          },
         }}
       >
         <form onSubmit={deleteFolder}>
-          <Flex direction={'column'} gap={'md'}>
+          <Stack gap="md">
             <Select
               data={folders.map((folder) => ({
                 value: JSON.stringify(folder),
@@ -177,11 +227,24 @@ export const Folders = ({ allElementsButtonClick }: FoldersProps) => {
               }))}
               value={folderForDelete ? folderForDelete.value : null}
               onChange={(_value, option) => setFolderForDelete(option)}
+              variant="filled"
+              radius="md"
+              size="md"
+              styles={{
+                input: {
+                  background: 'rgba(40, 40, 50, 0.5)',
+                  border: '1px solid rgba(70, 70, 80, 0.3)',
+                  color: '#e4e4e7',
+                },
+              }}
             />
-          </Flex>
+          </Stack>
 
-          <Group mt='xl' justify={'end'}>
+          <Group mt="xl" justify="end">
             <Button
+              radius="md"
+              variant="subtle"
+              color="gray"
               onClick={() => {
                 closeDeleteModal();
                 setFolderForDelete(null);
@@ -189,80 +252,103 @@ export const Folders = ({ allElementsButtonClick }: FoldersProps) => {
             >
               {t('modals.deleteFolder.buttons.cancel')}
             </Button>
-            <Button type={'submit'}>{t('modals.deleteFolder.buttons.submit')}</Button>
+            <Button type="submit" radius="md" color="red">
+              {t('modals.deleteFolder.buttons.submit')}
+            </Button>
           </Group>
         </form>
       </Modal>
-      <Grid grow>
-        <Grid.Col span={3} style={{ height: '100%', paddingRight: '20px' }}>
-          <Input
-            placeholder={t('search.placeholder')}
-            mb={'md'}
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.currentTarget.value)}
-          />
-          <Flex gap={'md'}>
-            <Button mb={'md'} fullWidth onClick={openAddModal}>
-              {t('buttons.add')}
-            </Button>
-            <Button mb={'md'} fullWidth onClick={openDeleteModal}>
-              {t('buttons.delete')}
-            </Button>
-          </Flex>
-          <Text size='lg' c='gray' mb='md'>
-            {t('folders.title')}: {filteredFolders.length}
-          </Text>
-          <List spacing='md'>
-            <List.Item
-              key={'allFolders'}
-              style={{
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                setSelectedFolder(null);
-              }}
-            >
-              <Group align='center' justify='space-between'>
+      <Box>
+        <Input
+          placeholder={t('search.placeholder')}
+          mb="md"
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.currentTarget.value)}
+          variant="filled"
+          radius="md"
+          size="md"
+          styles={{
+            input: {
+              background: 'rgba(40, 40, 50, 0.5)',
+              border: '1px solid rgba(70, 70, 80, 0.3)',
+              color: '#e4e4e7',
+              '&::placeholder': {
+                color: '#71717a',
+              },
+              '&:focus': {
+                border: '1px solid rgba(100, 149, 237, 0.5)',
+              },
+            },
+          }}
+        />
+        <Flex gap="md" mb="lg">
+          <Button fullWidth radius="md" size="md" onClick={openAddModal}>
+            {t('buttons.add')}
+          </Button>
+          <Button fullWidth radius="md" size="md" variant="light" color="red" onClick={openDeleteModal}>
+            {t('buttons.delete')}
+          </Button>
+        </Flex>
+        <Text size="sm" c="dimmed" mb="md" fw={500}>
+          {t('folders.title')}: {filteredFolders.length}
+        </Text>
+        <Stack gap="sm">
+          <Paper
+            p="md"
+            radius="md"
+            style={{
+              cursor: 'pointer',
+              background: !selectedFolder
+                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%)'
+                : 'rgba(39, 39, 42, 0.5)',
+              border: `1px solid ${!selectedFolder ? 'rgba(59, 130, 246, 0.3)' : 'rgba(70, 70, 80, 0.3)'}`,
+              transition: 'all 0.2s ease',
+            }}
+            onClick={() => {
+              setSelectedFolder(null);
+              allElementsButtonClick && allElementsButtonClick();
+            }}
+          >
+            <Text size={isMobile ? 'md' : 'sm'} fw={500} c={!selectedFolder ? 'blue.4' : 'gray.3'}>
+              {t('allElements')}
+            </Text>
+          </Paper>
+
+          {filteredFolders?.length > 0 ? (
+            filteredFolders.map((folder) => (
+              <Paper
+                key={folder.id}
+                p="md"
+                radius="md"
+                style={{
+                  cursor: 'pointer',
+                  background:
+                    selectedFolder?.id === folder.id
+                      ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%)'
+                      : 'rgba(39, 39, 42, 0.5)',
+                  border: `1px solid ${selectedFolder?.id === folder.id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(70, 70, 80, 0.3)'}`,
+                  transition: 'all 0.2s ease',
+                }}
+                onClick={() => {
+                  setSelectedFolder(folder);
+                }}
+              >
                 <Text
                   size={isMobile ? 'md' : 'sm'}
-                  c={!isMobile && !selectedFolder ? 'blue' : 'white'}
-                  onClick={() => allElementsButtonClick && allElementsButtonClick()}
+                  fw={500}
+                  c={selectedFolder?.id === folder.id ? 'blue.4' : 'gray.3'}
                 >
-                  {t('allElements')}
+                  {folder.label}
                 </Text>
-              </Group>
-            </List.Item>
-            <Divider my={'md'} />
-            {filteredFolders?.length > 0 ? (
-              filteredFolders.map((folder, index) => (
-                <>
-                  <List.Item
-                    key={folder.id}
-                    style={{
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => {
-                      setSelectedFolder(folder);
-                    }}
-                  >
-                    <Group align='center' justify='space-between'>
-                      <Text
-                        size={isMobile ? 'md' : 'sm'}
-                        c={!isMobile && selectedFolder?.id === folder.id ? 'blue' : 'white'}
-                      >
-                        {folder.label}
-                      </Text>
-                    </Group>
-                  </List.Item>
-                  {index != filteredFolders.length - 1 && <Divider my={'md'} />}
-                </>
-              ))
-            ) : (
-              <Text>{t('folders.notFound')}</Text>
-            )}
-          </List>
-        </Grid.Col>
-      </Grid>
+              </Paper>
+            ))
+          ) : (
+            <Text c="dimmed" size="sm" ta="center" py="md">
+              {t('folders.notFound')}
+            </Text>
+          )}
+        </Stack>
+      </Box>
     </>
   );
 };

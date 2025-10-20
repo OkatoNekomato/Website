@@ -1,6 +1,5 @@
-import { Flex, LoadingOverlay, Switch, Title } from '@mantine/core';
+import { Flex, Switch, Title } from '@mantine/core';
 import { useState } from 'react';
-import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { sendSuccessNotification } from '../shared';
 import {
@@ -14,56 +13,65 @@ import {
 import { changeTimeFormat } from '../api';
 
 export const TimeFormatSelector = () => {
-  const [loaderVisible, setLoaderState] = useDisclosure(false);
   const { t } = useTranslation('settings');
   const { envs } = useAppSelector(selectEnvVars);
-  const auth = useAppSelector(selectAuth);
+  const { is12HoursFormat } = useAppSelector(selectAuth);
   const authContext = useAuth();
   const dispatch = useAppDispatch();
-  const [is12Hours, setIs12Hours] = useState<boolean>(auth.is12HoursFormat);
 
-  const selectIs12Hours = async (is12Hours: boolean) => {
-    setLoaderState.open();
+  const [is12Hours, setIs12Hours] = useState(is12HoursFormat);
+  const [loading, setLoading] = useState(false);
 
-    setIs12Hours(is12Hours);
-    dispatch(setIs12HoursFormat(is12Hours));
+  const toggleFormat = async (checked: boolean) => {
+    if (loading) return;
+    setLoading(true);
 
-    const response = await changeTimeFormat(is12Hours, envs, t, authContext);
-    if (!response) {
-      setLoaderState.close();
-      return;
+    try {
+      setIs12Hours(checked);
+      dispatch(setIs12HoursFormat(checked));
+
+      const response = await changeTimeFormat(checked, envs, t, authContext);
+      if (!response?.ok) throw new Error('Failed to update format');
+
+      sendSuccessNotification(
+        t('notifications:timeFormatChanged', {
+          timeFormat: checked ? 12 : 24,
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    setLoaderState.close();
-    sendSuccessNotification(
-      t('notifications:timeFormatChanged', {
-        timeFormat: is12Hours ? 12 : 24,
-      }),
-    );
   };
 
   return (
-    <div style={{ flex: '1 0 auto' }}>
-      <LoadingOverlay
-        visible={loaderVisible}
-        zIndex={1000}
-        overlayProps={{ radius: 'sm', blur: 2 }}
-        loaderProps={{ color: 'blue' }}
-      />
+    <Flex direction="column" align="center" gap="xs">
+      <Title order={5} c="gray.2">
+        {t('main.timeFormat.title')}
+      </Title>
 
-      <Flex direction={'column'} justify={'center'} align={'center'} gap={'xs'}>
-        <Title order={5}>{t('main.timeFormat.title')}</Title>
+      <Flex align="center" gap="sm">
         <Switch
-          size='xl'
-          color='gray'
-          onLabel={12}
-          offLabel={24}
+          size="xl"
+          color="blue"
+          onLabel="12"
+          offLabel="24"
           checked={is12Hours}
-          onChange={async (event) => {
-            await selectIs12Hours(event.target.checked);
+          disabled={loading}
+          onChange={(e) => toggleFormat(e.currentTarget.checked)}
+          styles={{
+            track: {
+              backgroundColor: is12Hours ? '#3B82F6' : '#2C2E33',
+              borderColor: '#3B3C40',
+              transition: 'background-color 0.2s ease',
+            },
+            thumb: {
+              backgroundColor: '#fff',
+            },
           }}
         />
       </Flex>
-    </div>
+    </Flex>
   );
 };

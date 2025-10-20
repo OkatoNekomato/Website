@@ -10,6 +10,7 @@ import {
   Text,
   Stack,
   Anchor,
+  Divider,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useNavigate } from "react-router";
@@ -92,15 +93,11 @@ export default function SignUp() {
         t
       );
 
-      if (!response || !response.ok) {
-        return;
-      }
+      if (!response?.ok) return;
 
       sendSuccessNotification(t("notifications:successful"));
       localStorage.setItem("last_email", email);
       navigate(ROUTER_PATH.SIGN_IN, { replace: true });
-    } catch (err) {
-      // sendErrorNotification(t("notifications:unknownError"));
     } finally {
       setLoading(false);
     }
@@ -111,28 +108,33 @@ export default function SignUp() {
       w={420}
       mx="auto"
       mt={100}
-      p="xl"
+      p="2rem"
       radius="lg"
-      shadow="lg"
+      shadow="xl"
       style={{
-        background: "linear-gradient(180deg, #141414 0%, #1b1b1b 100%)",
-        color: "#e0e0e0",
-        borderColor: "#2c2c2c",
+        background: "linear-gradient(180deg, #141417 0%, #18181b 100%)",
+        border: "1px solid #2c2f33",
+        color: "#e5e5e5",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      <Logo size={100} />
+      <Logo size={90} mb="md" />
 
-      <Title order={2} ta="center" mb="xs" c="gray.1">
+      <Title
+        order={2}
+        ta="center"
+        mb="xs"
+        style={{ color: "#f1f1f1", fontWeight: 700, letterSpacing: "0.02em" }}
+      >
         {t("signUp.title")}
       </Title>
-      <Text ta="center" size="sm" mb="lg" c="dimmed">
+      <Text ta="center" size="sm" mb="xl" c="gray.5">
         {t("signUp.desc")}
       </Text>
 
       <form onSubmit={handleSubmit}>
-        <Stack>
+        <Stack gap="sm">
           <TextInput
             ref={usernameRef}
             label={t("signUp.fields.name.title")}
@@ -141,6 +143,14 @@ export default function SignUp() {
             radius="sm"
             withAsterisk
             {...form.getInputProps("name")}
+            styles={{
+              input: {
+                backgroundColor: "#1e1f23",
+                borderColor: "#2c2f33",
+                "&:focus": { borderColor: "#3b82f6" },
+              },
+              label: { color: "#cfcfcf" },
+            }}
           />
 
           <TextInput
@@ -150,46 +160,95 @@ export default function SignUp() {
             radius="sm"
             withAsterisk
             {...form.getInputProps("email")}
+            styles={{
+              input: {
+                backgroundColor: "#1e1f23",
+                borderColor: "#2c2f33",
+                "&:focus": { borderColor: "#3b82f6" },
+              },
+              label: { color: "#cfcfcf" },
+            }}
           />
 
           <PasswordInput
             label={t("signUp.fields.password.title")}
-            placeholder="******"
+            placeholder="••••••••"
             variant="filled"
             radius="sm"
             withAsterisk
             {...form.getInputProps("password")}
+            styles={{
+              input: {
+                backgroundColor: "#1e1f23",
+                borderColor: "#2c2f33",
+                "&:focus": { borderColor: "#3b82f6" },
+              },
+              label: { color: "#cfcfcf" },
+            }}
           />
 
           <PasswordInput
             label={t("signUp.fields.confirmPassword.title")}
-            placeholder="******"
+            placeholder="••••••••"
             variant="filled"
             radius="sm"
             withAsterisk
             {...form.getInputProps("confirm")}
+            styles={{
+              input: {
+                backgroundColor: "#1e1f23",
+                borderColor: "#2c2f33",
+                "&:focus": { borderColor: "#3b82f6" },
+              },
+              label: { color: "#cfcfcf" },
+            }}
           />
 
           <Button
             type="submit"
             fullWidth
-            mt="sm"
+            mt="md"
             radius="sm"
             loading={loading}
             disabled={!form.isValid()}
+            styles={{
+              root: {
+                backgroundColor: "#2563eb",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+                transition: "background-color 0.15s ease, opacity 0.15s ease",
+                "&:hover": { backgroundColor: "#1d4ed8" },
+                "&[data-disabled]": {
+                  backgroundColor: "#1e40af",
+                  opacity: 0.6,
+                  cursor: "not-allowed",
+                },
+              },
+              label: { color: "#fff" },
+            }}
           >
             {t("signUp.title")}
           </Button>
         </Stack>
       </form>
 
-      <Text ta="center" size="sm" mt="lg" c="gray.5">
+      <Divider
+        my="xl"
+        color="rgba(255,255,255,0.1)"
+        labelPosition="center"
+      />
+
+      <Text ta="center" size="sm" c="gray.5">
         {t("signUp.alreadyHaveAccount")}{" "}
         <Anchor
           size="sm"
           c="blue.4"
           onClick={() => navigate(ROUTER_PATH.SIGN_IN, { replace: true })}
-          style={{ cursor: "pointer" }}
+          style={{
+            cursor: "pointer",
+            fontWeight: 500,
+            transition: "color 0.15s ease",
+          }}
         >
           {t("signIn.title")}
         </Anchor>

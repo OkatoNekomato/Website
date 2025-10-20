@@ -116,24 +116,27 @@ export default function SignIn() {
       w={420}
       mx="auto"
       mt={100}
-      p="xl"
+      p="2rem"
       radius="lg"
       shadow="xl"
-      withBorder
       style={{
-        background: "linear-gradient(180deg, #141414 0%, #1b1b1b 100%)",
-        color: "#e0e0e0",
-        borderColor: "#2c2c2c",
+        background: "linear-gradient(180deg, #141417 0%, #18181b 100%)",
+        border: "1px solid #2c2f33",
+        color: "#e5e5e5",
         position: "relative",
         overflow: "hidden",
       }}
     >
       <Stack align="center" mb="xl">
-        <Logo size={100} />
-        <Title order={2} ta="center" c="gray.1">
+        <Logo size={90} mb="md" />
+        <Title
+          order={2}
+          ta="center"
+          style={{ color: "#f1f1f1", fontWeight: 700, letterSpacing: "0.02em" }}
+        >
           {t("signIn.title")}
         </Title>
-        <Text ta="center" size="sm" c="dimmed">
+        <Text ta="center" size="sm" c="gray.5">
           {approveMode
             ? t("signIn.exists", { user: form.values.email })
             : t("signIn.desc")}
@@ -142,7 +145,7 @@ export default function SignIn() {
 
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="sm">
-          <Transition mounted={!approveMode} transition="fade" duration={200} timingFunction="ease">
+          <Transition mounted={!approveMode} transition="fade" duration={200}>
             {(styles) => (
               <div style={styles}>
                 {!approveMode && (
@@ -153,6 +156,14 @@ export default function SignIn() {
                     radius="sm"
                     withAsterisk
                     {...form.getInputProps("email")}
+                    styles={{
+                      input: {
+                        backgroundColor: "#1e1f23",
+                        borderColor: "#2c2f33",
+                        "&:focus": { borderColor: "#3b82f6" },
+                      },
+                      label: { color: "#cfcfcf" },
+                    }}
                   />
                 )}
               </div>
@@ -162,11 +173,19 @@ export default function SignIn() {
           <PasswordInput
             ref={passwordRef}
             label={t("signIn.fields.password.title")}
-            placeholder="******"
+            placeholder="••••••••"
             variant="filled"
             radius="sm"
             withAsterisk
             {...form.getInputProps("password")}
+            styles={{
+              input: {
+                backgroundColor: "#1e1f23",
+                borderColor: "#2c2f33",
+                "&:focus": { borderColor: "#3b82f6" },
+              },
+              label: { color: "#cfcfcf" },
+            }}
           />
 
           <Transition mounted={mfaRequired} transition="fade" duration={200}>
@@ -183,11 +202,20 @@ export default function SignIn() {
                       if (e.currentTarget.value.length > 6) return;
                       dispatch(setTotpCode(e.currentTarget.value));
                     }}
+                    styles={{
+                      input: {
+                        backgroundColor: "#1e1f23",
+                        borderColor: "#2c2f33",
+                        "&:focus": { borderColor: "#3b82f6" },
+                      },
+                      label: { color: "#cfcfcf" },
+                    }}
                   />
                 )}
               </div>
             )}
           </Transition>
+
           <Group gap={4} mt={4}>
             {approveMode ? (
               <>
@@ -220,7 +248,7 @@ export default function SignIn() {
             )}
           </Group>
 
-          <Divider my="xs" color="gray.8" />
+          <Divider my="xs" color="rgba(255,255,255,0.1)" />
 
           <Button
             type="submit"
@@ -229,18 +257,39 @@ export default function SignIn() {
             radius="sm"
             loading={loading}
             disabled={!form.isValid()}
+            styles={{
+              root: {
+                backgroundColor: "#3b82f6",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+                transition: "background-color 0.15s ease, opacity 0.15s ease",
+                "&:hover": { backgroundColor: "#2563eb" },
+                "&[data-disabled]": {
+                  backgroundColor: "#1e40af",
+                  opacity: 0.6,
+                  cursor: "not-allowed",
+                },
+              },
+              label: { color: "#fff" },
+            }}
           >
             {t("signIn.title")}
           </Button>
         </Stack>
       </form>
 
-      <Text ta="center" size="sm" mt="lg" c="gray.5">
+      <Divider my="xl" color="rgba(255,255,255,0.1)" />
+
+      <Text ta="center" size="sm" c="gray.5">
         <Anchor
           size="sm"
           c="blue.4"
           onClick={() => navigate(ROUTER_PATH.FORGOT, { replace: true })}
-          style={{ cursor: "pointer" }}
+          style={{
+            cursor: "pointer",
+            fontWeight: 500,
+            transition: "color 0.15s ease",
+          }}
         >
           {t("signIn.forgotPassword")}
         </Anchor>

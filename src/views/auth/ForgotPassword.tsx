@@ -12,16 +12,21 @@ import {
     Anchor,
     Center,
     Transition,
+    Divider,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { selectEnvVars, useAppSelector } from "../../stores";
 import { sendPasswordRecoveryCode } from "../../api/gmail";
-import { resetPassword } from "../../api";
-import { sendErrorNotification, sendSuccessNotification } from "../../shared";
-import { FORGOT_PASSWORD_COOLDOWN, ROUTER_PATH } from "../../shared";
+import {
+    sendErrorNotification,
+    sendSuccessNotification,
+    FORGOT_PASSWORD_COOLDOWN,
+    ROUTER_PATH,
+} from "../../shared";
 import Logo from "../../components/Logo";
+import { resetPassword } from "../../api";
 
 export default function ForgotPassword() {
     const navigate = useNavigate();
@@ -113,21 +118,40 @@ export default function ForgotPassword() {
         }
     };
 
-    const handleVerifyCode = (values: typeof codeForm.values) => {
-        setCode(values.code.trim());
-        setStep("reset");
+    const handleVerifyCode = async (values: typeof codeForm.values) => {
+        const enteredCode = values.code.trim();
+
+        setLoading(true);
+        try {
+            const res = await resetPassword(enteredCode, "", t, envs);
+
+            if (res && res.status === 400) {
+                sendErrorNotification(t("forgot.notifications.invalidCode"));
+                return;
+            }
+
+            setCode(enteredCode);
+            setStep("reset");
+            sendSuccessNotification(t("forgot.notifications.codeVerified"));
+        } catch {
+            sendErrorNotification(t("notifications:serverUnavailable"));
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleResetPassword = async (values: typeof resetForm.values) => {
         setLoading(true);
         try {
-            const res = await resetPassword(code, values.password, envs, t);
+            const res = await resetPassword(code, values.password, t, envs);
             if (!res) return;
 
             if (res.ok) {
                 sendSuccessNotification(t("forgot.notifications.passwordChanged"));
                 localStorage.removeItem("forgot_cooldown");
                 navigate(ROUTER_PATH.SIGN_IN, { replace: true });
+            } else if (res.status === 400) {
+                sendErrorNotification(t("forgot.notifications.invalidCode"));
             } else {
                 sendErrorNotification(t("forgot.notifications.resetError"));
             }
@@ -137,6 +161,7 @@ export default function ForgotPassword() {
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         const ref =
@@ -152,29 +177,33 @@ export default function ForgotPassword() {
     return (
         <Center>
             <Paper
-                w="min(420px, 90vw)"
-                mt={120}
-                p="xl"
+                w={420}
+                mt={100}
+                p="2rem"
                 radius="lg"
-                shadow="lg"
-                bg="#1a1a1a"
+                shadow="xl"
                 style={{
-                    border: "1px solid #2a2a2a",
-                    color: "#e0e0e0",
+                    background: "linear-gradient(180deg, #141417 0%, #18181b 100%)",
+                    border: "1px solid #2c2f33",
+                    color: "#e5e5e5",
                     overflow: "hidden",
                 }}
             >
-                <Logo size={80} mb="1.5rem" />
+                <Stack align="center" mb="xl">
+                    <Logo size={90} mb="md" />
+                    <Title
+                        order={2}
+                        ta="center"
+                        style={{ color: "#f1f1f1", fontWeight: 700 }}
+                    >
+                        {t(`forgot.titles.${step}`)}
+                    </Title>
+                    <Text ta="center" size="sm" c="gray.5">
+                        {t(`forgot.descriptions.${step}`, { email: sentTo })}
+                    </Text>
+                </Stack>
 
-                <Title order={2} ta="center" mb="xs" c="gray.1">
-                    {t(`forgot.titles.${step}`)}
-                </Title>
-
-                <Text ta="center" size="sm" mb="lg" c="dimmed">
-                    {t(`forgot.descriptions.${step}`, { email: sentTo })}
-                </Text>
-
-                <Transition mounted={mounted} transition="slide-up" duration={250}>
+                <Transition mounted={mounted} transition="fade" duration={250}>
                     {(styles) => (
                         <div style={styles}>
                             {step === "request" && (
@@ -188,6 +217,14 @@ export default function ForgotPassword() {
                                             radius="sm"
                                             withAsterisk
                                             {...requestForm.getInputProps("email")}
+                                            styles={{
+                                                input: {
+                                                    backgroundColor: "#1e1f23",
+                                                    borderColor: "#2c2f33",
+                                                    "&:focus": { borderColor: "#3b82f6" },
+                                                },
+                                                label: { color: "#cfcfcf" },
+                                            }}
                                         />
                                         <Button
                                             type="submit"
@@ -196,11 +233,19 @@ export default function ForgotPassword() {
                                             radius="sm"
                                             loading={loading}
                                             disabled={cooldown > 0}
+                                            styles={{
+                                                root: {
+                                                    backgroundColor: "#3b82f6",
+                                                    "&:hover": { backgroundColor: "#2563eb" },
+                                                    "&[data-disabled]": {
+                                                        backgroundColor: "#1e40af",
+                                                        opacity: 0.6,
+                                                    },
+                                                },
+                                            }}
                                         >
                                             {cooldown > 0
-                                                ? t("forgot.buttons.resend", {
-                                                    seconds: cooldown,
-                                                })
+                                                ? t("forgot.buttons.resend", { seconds: cooldown })
                                                 : t("forgot.buttons.send")}
                                         </Button>
                                     </Stack>
@@ -218,6 +263,14 @@ export default function ForgotPassword() {
                                             radius="sm"
                                             withAsterisk
                                             {...codeForm.getInputProps("code")}
+                                            styles={{
+                                                input: {
+                                                    backgroundColor: "#1e1f23",
+                                                    borderColor: "#2c2f33",
+                                                    "&:focus": { borderColor: "#3b82f6" },
+                                                },
+                                                label: { color: "#cfcfcf" },
+                                            }}
                                         />
                                         <Button
                                             type="submit"
@@ -226,6 +279,12 @@ export default function ForgotPassword() {
                                             radius="sm"
                                             loading={loading}
                                             disabled={!codeForm.isValid()}
+                                            styles={{
+                                                root: {
+                                                    backgroundColor: "#3b82f6",
+                                                    "&:hover": { backgroundColor: "#2563eb" },
+                                                },
+                                            }}
                                         >
                                             {t("forgot.buttons.verify")}
                                         </Button>
@@ -239,19 +298,35 @@ export default function ForgotPassword() {
                                         <PasswordInput
                                             ref={passwordRef}
                                             label={t("forgot.fields.password.label")}
-                                            placeholder="******"
+                                            placeholder="••••••••"
                                             variant="filled"
                                             radius="sm"
                                             withAsterisk
                                             {...resetForm.getInputProps("password")}
+                                            styles={{
+                                                input: {
+                                                    backgroundColor: "#1e1f23",
+                                                    borderColor: "#2c2f33",
+                                                    "&:focus": { borderColor: "#3b82f6" },
+                                                },
+                                                label: { color: "#cfcfcf" },
+                                            }}
                                         />
                                         <PasswordInput
                                             label={t("forgot.fields.confirm.label")}
-                                            placeholder="******"
+                                            placeholder="••••••••"
                                             variant="filled"
                                             radius="sm"
                                             withAsterisk
                                             {...resetForm.getInputProps("confirm")}
+                                            styles={{
+                                                input: {
+                                                    backgroundColor: "#1e1f23",
+                                                    borderColor: "#2c2f33",
+                                                    "&:focus": { borderColor: "#3b82f6" },
+                                                },
+                                                label: { color: "#cfcfcf" },
+                                            }}
                                         />
                                         <Button
                                             type="submit"
@@ -260,6 +335,12 @@ export default function ForgotPassword() {
                                             radius="sm"
                                             loading={loading}
                                             disabled={!resetForm.isValid()}
+                                            styles={{
+                                                root: {
+                                                    backgroundColor: "#3b82f6",
+                                                    "&:hover": { backgroundColor: "#2563eb" },
+                                                },
+                                            }}
                                         >
                                             {t("forgot.buttons.save")}
                                         </Button>
@@ -270,13 +351,19 @@ export default function ForgotPassword() {
                     )}
                 </Transition>
 
-                <Text ta="center" size="sm" mt="lg" c="gray.5">
+                <Divider my="xl" color="rgba(255,255,255,0.1)" />
+
+                <Text ta="center" size="sm" c="gray.5">
                     {t("forgot.backToSignIn")}{" "}
                     <Anchor
                         size="sm"
                         c="blue.4"
                         onClick={() => navigate(ROUTER_PATH.SIGN_IN, { replace: true })}
-                        style={{ cursor: "pointer" }}
+                        style={{
+                            cursor: "pointer",
+                            fontWeight: 500,
+                            transition: "color 0.15s ease",
+                        }}
                     >
                         {t("forgot.signInLink")}
                     </Anchor>
