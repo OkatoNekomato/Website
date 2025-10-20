@@ -10,47 +10,67 @@ export const MfaManager = (): JSX.Element => {
   const { handleSetupMfa, handleDisableMfa, openMfaModalWithState } = useMfa();
 
   return (
-    <Card shadow='xl' padding='lg' radius='md' style={{ width: isMobile ? '80vw' : '460px' }}>
-      <Stack gap={'xs'}>
-        <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }}>
-          {t('mfa.managerTitle')}
-        </Title>
+    <Card
+      shadow="xl"
+      padding="xl"
+      radius="lg"
+      withBorder
+      style={{
+        height: '100%',
+        minHeight: '240px',
+        background: 'rgba(30, 30, 35, 0.6)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(70, 70, 80, 0.3)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Stack gap="lg" style={{ flex: 1, justifyContent: 'space-between' }}>
+        <div>
+          <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }} c="gray.0" mb="md">
+            {t('mfa.managerTitle')}
+          </Title>
 
-        <Group style={{ textAlign: isMobile ? 'center' : 'left' }}>
-          <Text size='lg' w={500}>
-            {t('mfa.statusTitle')}:{' '}
-            <Badge color={isMfaEnabled ? 'green' : 'red'}>
-              <Text size='sm'>{isMfaEnabled ? t('mfa.enabled') : t('mfa.disabled')}</Text>
-            </Badge>
-          </Text>
-        </Group>
-
-        {!isMfaEnabled ? (
-          <Button
-            fullWidth
-            onClick={async () => {
-              await handleSetupMfa();
-            }}
-          >
-            {t('mfa.enableMfaButton')}
-          </Button>
-        ) : (
-          <>
-            <Button
-              fullWidth
-              color='red'
-              onClick={() => {
-                openMfaModalWithState(EMfaModalState.DISABLE, async (totpCode) => {
-                  if (totpCode) {
-                    await handleDisableMfa(totpCode);
-                  }
-                });
+          <Group justify="center" mt="lg">
+            <Text size="md" c="gray.3" fw={500}>
+              {t('mfa.statusTitle')}:{' '}
+            </Text>
+            <Badge
+              color={isMfaEnabled ? 'green' : 'red'}
+              variant="light"
+              size="lg"
+              radius="md"
+              style={{
+                textTransform: 'none',
+                fontSize: '14px',
+                padding: '8px 16px',
               }}
             >
-              {t('mfa.disableMfaButton')}
-            </Button>
-          </>
-        )}
+              {isMfaEnabled ? t('mfa.enabled') : t('mfa.disabled')}
+            </Badge>
+          </Group>
+        </div>
+
+        <Button
+          fullWidth
+          radius="md"
+          size="md"
+          color={isMfaEnabled ? 'red' : 'blue'}
+          variant={isMfaEnabled ? 'light' : 'filled'}
+          onClick={async () => {
+            if (isMfaEnabled) {
+              openMfaModalWithState(EMfaModalState.DISABLE, async (totpCode) => {
+                if (totpCode) {
+                  await handleDisableMfa(totpCode);
+                }
+              });
+            } else {
+              await handleSetupMfa();
+            }
+          }}
+        >
+          {isMfaEnabled ? t('mfa.disableMfaButton') : t('mfa.enableMfaButton')}
+        </Button>
       </Stack>
     </Card>
   );

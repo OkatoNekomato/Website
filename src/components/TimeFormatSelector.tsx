@@ -43,7 +43,7 @@ export const TimeFormatSelector = () => {
   };
 
   return (
-    <div style={{ flex: '1 0 auto' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       <LoadingOverlay
         visible={loaderVisible}
         zIndex={1000}
@@ -51,16 +51,24 @@ export const TimeFormatSelector = () => {
         loaderProps={{ color: 'blue' }}
       />
 
-      <Flex direction={'column'} justify={'center'} align={'center'} gap={'xs'}>
-        <Title order={5}>{t('main.timeFormat.title')}</Title>
+      <Flex direction={'column'} justify={'center'} align={'center'} gap={'md'}>
+        <Title order={4} c="gray.2">
+          {t('main.timeFormat.title')}
+        </Title>
         <Switch
           size='xl'
-          color='gray'
-          onLabel={12}
-          offLabel={24}
+          color='blue'
+          onLabel="12"
+          offLabel="24"
           checked={is12Hours}
           onChange={async (event) => {
             await selectIs12Hours(event.target.checked);
+          }}
+          styles={{
+            track: {
+              background: is12Hours ? 'rgba(100, 149, 237, 0.3)' : 'rgba(70, 70, 80, 0.5)',
+              border: '1px solid rgba(70, 70, 80, 0.3)',
+            },
           }}
         />
       </Flex>

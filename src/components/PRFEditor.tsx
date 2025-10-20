@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Group, LoadingOverlay, Stack, Title } from '@mantine/core';
+import { Button, Card, LoadingOverlay, Stack, Title, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from '@mantine/hooks';
 import { encrypt, LOCAL_STORAGE } from '../shared';
@@ -52,31 +52,52 @@ export const PRFEditor = (): JSX.Element => {
   };
 
   return (
-    <Card shadow='xl' padding='lg' radius='md' style={{ width: isMobile ? '80vw' : '460px' }}>
-      <Stack gap='xs'>
+    <Card
+      shadow="xl"
+      padding="xl"
+      radius="lg"
+      withBorder
+      style={{
+        height: '100%',
+        minHeight: '240px',
+        background: 'rgba(30, 30, 35, 0.6)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(70, 70, 80, 0.3)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Stack gap="lg" style={{ flex: 1, justifyContent: 'space-between' }}>
         <LoadingOverlay
           visible={isLoading}
           zIndex={1000}
           overlayProps={{ radius: 'sm', blur: 2 }}
         />
 
-        <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }}>
-          {t('main.prf.title')}
-        </Title>
+        <div>
+          <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }} c="gray.0" mb="md">
+            {t('main.prf.title')}
+          </Title>
 
-        <Group justify='space-between'>
-          {!secretPassword && <Title order={isMobile ? 6 : 4}>{t('main.prf.decryptOnce')}</Title>}
-          {!!secretPassword &&
-            (!hasPassKey ? (
-              <Button fullWidth onClick={addPassKey}>
-                {t('main.prf.add')}
-              </Button>
-            ) : (
-              <Button fullWidth color='red' onClick={removePassKey}>
-                {t('main.prf.delete')}
-              </Button>
-            ))}
-        </Group>
+          {!secretPassword && (
+            <Text size="sm" style={{ textAlign: 'center' }} c="dimmed" mt="lg">
+              {t('main.prf.decryptOnce')}
+            </Text>
+          )}
+        </div>
+
+        {!!secretPassword && (
+          <Button
+            fullWidth
+            radius="md"
+            size="md"
+            color={hasPassKey ? 'red' : 'blue'}
+            variant={hasPassKey ? 'light' : 'filled'}
+            onClick={hasPassKey ? removePassKey : addPassKey}
+          >
+            {hasPassKey ? t('main.prf.delete') : t('main.prf.add')}
+          </Button>
+        )}
       </Stack>
     </Card>
   );

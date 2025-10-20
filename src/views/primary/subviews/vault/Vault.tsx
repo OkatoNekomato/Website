@@ -11,6 +11,7 @@ import {
   Modal,
   Text,
   Title,
+  Stack,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -134,6 +135,9 @@ export const Vault = (): JSX.Element => {
   const getGoogleStateButton = (state: boolean) => {
     return state ? (
       <Button
+        fullWidth
+        radius="md"
+        size="md"
         onClick={() => {
           if (isMfaEnabled) {
             openMfaModalWithState(EMfaModalState.VALIDATE, signOutWithMfa);
@@ -146,8 +150,21 @@ export const Vault = (): JSX.Element => {
         {t('google.signOut')}
       </Button>
     ) : (
-      <Button onClick={openSecretPasswordModel}>{t('google.signIn')}</Button>
+      <Button fullWidth radius="md" size="md" onClick={openSecretPasswordModel}>
+        {t('google.signIn')}
+      </Button>
     );
+  };
+
+  const modalStyles = {
+    content: {
+      background: 'rgba(24, 24, 27, 0.95)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(70, 70, 80, 0.4)',
+    },
+    header: {
+      background: 'transparent',
+    },
   };
 
   return (
@@ -164,15 +181,23 @@ export const Vault = (): JSX.Element => {
           centered={true}
           opened={keepDataModalState}
           onClose={closeKeepDataModal}
-          size='auto'
-          title={t('modals.keepData.title')}
+          size="md"
+          title={
+            <Text size="lg" fw={600} c="gray.0">
+              {t('modals.keepData.title')}
+            </Text>
+          }
           overlayProps={{
-            backgroundOpacity: 0.55,
-            blur: 3,
+            backgroundOpacity: 0.7,
+            blur: 8,
           }}
+          styles={modalStyles}
         >
-          <Group mt='xl' justify={'end'}>
+          <Group mt="xl" justify="end">
             <Button
+              radius="md"
+              variant="light"
+              color="red"
               onClick={() => {
                 signOutGoogleButton(false);
                 closeKeepDataModal();
@@ -181,6 +206,7 @@ export const Vault = (): JSX.Element => {
               {t('modals.keepData.buttons.remove')}
             </Button>
             <Button
+              radius="md"
               onClick={() => {
                 signOutGoogleButton(true);
                 closeKeepDataModal();
@@ -194,12 +220,17 @@ export const Vault = (): JSX.Element => {
           centered={true}
           opened={secretPasswordModalState}
           onClose={closeSecretPasswordModal}
-          size='auto'
-          title={t('modals.masterPassword.title')}
+          size="md"
+          title={
+            <Text size="lg" fw={600} c="gray.0">
+              {t('modals.masterPassword.title')}
+            </Text>
+          }
           overlayProps={{
-            backgroundOpacity: 0.55,
-            blur: 3,
+            backgroundOpacity: 0.7,
+            blur: 8,
           }}
+          styles={modalStyles}
         >
           <form
             onSubmit={(e) => {
@@ -213,36 +244,51 @@ export const Vault = (): JSX.Element => {
               value={secretPassword}
               onChange={(e) => setSecretPassword(e.target.value)}
             />
-            <Group mt='xl' justify={'end'}>
-              <Button type={'submit'} disabled={secretPassword.length < 1}>
+            <Group mt="xl" justify="end">
+              <Button type="submit" radius="md" disabled={secretPassword.length < 1}>
                 {t('modals.masterPassword.buttons.submit')}
               </Button>
             </Group>
           </form>
         </Modal>
-        <Center>
-          <Flex
-            direction={'column'}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Title order={1} mb={'xl'}>
+        <Center style={{ minHeight: 'calc(100vh - 200px)', padding: '20px' }}>
+          <Stack align="center" gap="xl">
+            <Title order={1} c="gray.0" ta="center">
               {t('title')}
             </Title>
 
-            <Card shadow='sm' padding='lg' radius='md' withBorder>
+            <Card
+              shadow="xl"
+              padding="xl"
+              radius="lg"
+              withBorder
+              style={{
+                background: 'rgba(30, 30, 35, 0.6)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(70, 70, 80, 0.3)',
+                minWidth: '360px',
+                maxWidth: '420px',
+              }}
+            >
               <Card.Section>
-                <Center>
-                  <Image mt={'xs'} h={100} w={100} src={'/google.svg'} alt={'Google drive'} />
+                <Center py="lg">
+                  <Image h={100} w={100} src={'/google.svg'} alt={'Google drive'} />
                 </Center>
               </Card.Section>
 
-              <Group align={'center'} justify='space-between' mt='md' mb='md'>
-                <Text fw={500}>Google Drive</Text>
-                <Badge color={googleDriveState ? 'green' : 'red'}>
+              <Group align="center" justify="space-between" mb="lg">
+                <Text fw={500} c="gray.0" size="md">
+                  Google Drive
+                </Text>
+                <Badge
+                  color={googleDriveState ? 'green' : 'red'}
+                  variant="light"
+                  size="md"
+                  radius="md"
+                  style={{
+                    textTransform: 'none',
+                  }}
+                >
                   {googleDriveState
                     ? t('states.connected', { email: googleDriveEmail })
                     : t('states.disconnected')}
@@ -251,7 +297,7 @@ export const Vault = (): JSX.Element => {
 
               {getGoogleStateButton(googleDriveState)}
             </Card>
-          </Flex>
+          </Stack>
         </Center>
       </div>
       <Footer />

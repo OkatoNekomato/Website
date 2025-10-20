@@ -12,9 +12,9 @@ export default function Root() {
       <div style={{ flex: '1 0 auto' }}>
         <RootHero />
         <RootFeature />
-        <Divider />
+        <Divider w='95%' mx='auto' />
         <RootFaq />
-        <Divider />
+        <Divider w='95%' mx='auto' />
         <RootFeedback />
       </div>
       <Footer />

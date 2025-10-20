@@ -38,49 +38,82 @@ export const InactiveMinutesEditor = (): JSX.Element => {
   };
 
   return (
-    <Card shadow='xl' padding='lg' radius='md' style={{ width: isMobile ? '80vw' : '460px' }}>
-      <form onSubmit={handleSave}>
-        <Stack gap={'xs'}>
-          <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }}>
-            {t('main.inactiveMinutes.title')}
-          </Title>
+    <Card
+      shadow="xl"
+      padding="xl"
+      radius="lg"
+      withBorder
+      style={{
+        height: '100%',
+        minHeight: '240px',
+        background: 'rgba(30, 30, 35, 0.6)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(70, 70, 80, 0.3)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <form onSubmit={handleSave} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Stack gap="lg" style={{ flex: 1, justifyContent: 'space-between' }}>
+          <div>
+            <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }} c="gray.0" mb="md">
+              {t('main.inactiveMinutes.title')}
+            </Title>
 
-          <Title order={6} style={{ textAlign: 'center' }}>
-            {t('main.inactiveMinutes.description')}
-          </Title>
+            <Text size="sm" style={{ textAlign: 'center' }} c="dimmed" mb="lg">
+              {t('main.inactiveMinutes.description')}
+            </Text>
 
-          {!isEditing ? (
-            <Text>{t('main.inactiveMinutes.currentValue', { minutes: inactiveMinutes })}</Text>
-          ) : (
-            <TextInput
-              label={t('main.inactiveMinutes.placeholder')}
-              value={tempValue}
-              type='number'
-              min={1}
-              max={9999}
-              onChange={(event) => {
-                const value = Number(event.currentTarget.value);
-                if (value < 2 || value > 9999) {
-                  return;
-                }
-
-                setTempValue(value);
-              }}
-              disabled={!isEditing}
-            />
-          )}
-
-          <Group justify='space-between'>
             {!isEditing ? (
-              <Button fullWidth onClick={() => setIsEditing(true)}>
+              <Text size="lg" ta="center" c="gray.1" fw={500}>
+                {t('main.inactiveMinutes.currentValue', { minutes: inactiveMinutes })}
+              </Text>
+            ) : (
+              <TextInput
+                label={t('main.inactiveMinutes.placeholder')}
+                value={tempValue}
+                type="number"
+                min={2}
+                max={9999}
+                variant="filled"
+                radius="md"
+                size="md"
+                onChange={(event) => {
+                  const value = Number(event.currentTarget.value);
+                  if (value < 2 || value > 9999) {
+                    return;
+                  }
+                  setTempValue(value);
+                }}
+                styles={{
+                  input: {
+                    background: 'rgba(40, 40, 50, 0.5)',
+                    border: '1px solid rgba(70, 70, 80, 0.3)',
+                    color: '#e4e4e7',
+                    '&:focus': {
+                      border: '1px solid rgba(100, 149, 237, 0.5)',
+                    },
+                  },
+                  label: {
+                    color: '#a1a1aa',
+                    marginBottom: '8px',
+                  },
+                }}
+              />
+            )}
+          </div>
+
+          <Group gap="md">
+            {!isEditing ? (
+              <Button fullWidth radius="md" size="md" onClick={() => setIsEditing(true)}>
                 {t('main.inactiveMinutes.editButton')}
               </Button>
             ) : (
               <>
-                <Button fullWidth type={'submit'} color='green'>
+                <Button fullWidth radius="md" size="md" type="submit" color="green" variant="light">
                   {t('main.inactiveMinutes.saveButton')}
                 </Button>
-                <Button fullWidth color='red' onClick={handleCancel}>
+                <Button fullWidth radius="md" size="md" color="red" variant="light" onClick={handleCancel}>
                   {t('main.inactiveMinutes.cancelButton')}
                 </Button>
               </>

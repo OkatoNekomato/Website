@@ -1,5 +1,5 @@
 import { FC, forwardRef } from 'react';
-import { Avatar, Button, Group, Menu, Modal, rem, UnstyledButton } from '@mantine/core';
+import { Avatar, Button, Group, Menu, Modal, rem, UnstyledButton, Text } from '@mantine/core';
 import { ROUTER_PATH, sendNotification, sendSuccessNotification } from '../shared';
 import { useNavigate } from 'react-router-dom';
 import { MdOutlineSettings } from 'react-icons/md';
@@ -14,7 +14,18 @@ import { useDisclosure } from '@mantine/hooks';
 const ProfileButton = forwardRef<HTMLButtonElement>(({ ...others }, ref) => {
   return (
     <UnstyledButton ref={ref} {...others}>
-      <Avatar variant='transparent' radius='xl' size='lg' color='rgba(81,175, 255, 1)' />
+      <Avatar
+        variant="filled"
+        radius="xl"
+        size="48"
+        style={{
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.15) 100%)',
+          border: '1px solid rgba(59, 130, 246, 0.3)',
+          color: '#60a5fa',
+          transition: 'all 0.2s ease',
+          cursor: 'pointer',
+        }}
+      />
     </UnstyledButton>
   );
 });
@@ -27,8 +38,8 @@ const elementsData = [
     icon: (
       <BsPersonCircle
         style={{
-          width: rem(20),
-          height: rem(20),
+          width: rem(18),
+          height: rem(18),
         }}
       />
     ),
@@ -40,8 +51,8 @@ const elementsData = [
     icon: (
       <MdOutlineSettings
         style={{
-          width: rem(20),
-          height: rem(20),
+          width: rem(18),
+          height: rem(18),
         }}
       />
     ),
@@ -53,8 +64,8 @@ const elementsData = [
     icon: (
       <TiCloudStorage
         style={{
-          width: rem(20),
-          height: rem(20),
+          width: rem(18),
+          height: rem(18),
         }}
       />
     ),
@@ -86,6 +97,22 @@ export const ProfileAvatarWithMenu: FC = () => {
           navigate(element.link);
         }
       }}
+      style={{
+        borderRadius: '8px',
+        padding: '10px 12px',
+        transition: 'all 0.2s ease',
+      }}
+      styles={{
+        item: {
+          color: '#e4e4e7',
+          '&:hover': {
+            background: 'rgba(59, 130, 246, 0.1)',
+          },
+        },
+        itemLabel: {
+          fontSize: '14px',
+        },
+      }}
     >
       {t(element.title)}
     </Menu.Item>
@@ -94,30 +121,62 @@ export const ProfileAvatarWithMenu: FC = () => {
   return (
     <Menu
       withArrow
-      trigger='click-hover'
+      trigger="click-hover"
       keepMounted={false}
       withinPortal={false}
       trapFocus={false}
       closeDelay={20}
       defaultOpened={false}
+      shadow="xl"
+      styles={{
+        dropdown: {
+          background: 'rgba(24, 24, 27, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(70, 70, 80, 0.4)',
+          padding: '8px',
+        },
+        arrow: {
+          background: 'rgba(24, 24, 27, 0.95)',
+          border: '1px solid rgba(70, 70, 80, 0.4)',
+        },
+        divider: {
+          borderColor: 'rgba(70, 70, 80, 0.3)',
+        },
+      }}
     >
       <Modal
         centered={true}
         opened={exitModalState}
         onClose={closeExitModal}
-        size='auto'
-        title={t('modals.logout.title')}
+        size="md"
+        title={
+          <Text size="lg" fw={600} c="gray.0">
+            {t('modals.logout.title')}
+          </Text>
+        }
         closeOnClickOutside={true}
         closeOnEscape={true}
         withCloseButton={true}
         overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
+          backgroundOpacity: 0.7,
+          blur: 8,
+        }}
+        styles={{
+          content: {
+            background: 'rgba(24, 24, 27, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(70, 70, 80, 0.4)',
+          },
+          header: {
+            background: 'transparent',
+          },
         }}
       >
-        <Group mt='xl' justify={'end'}>
+        <Group mt="xl" justify="end">
           <Button
-            variant={'filled'}
+            variant="subtle"
+            color="gray"
+            radius="md"
             onClick={() => {
               closeExitModal();
             }}
@@ -125,8 +184,9 @@ export const ProfileAvatarWithMenu: FC = () => {
             {t('modals.logout.buttons.cancel')}
           </Button>
           <Button
-            variant={'outline'}
-            color={'red'}
+            variant="light"
+            color="red"
+            radius="md"
             onClick={async () => {
               await authSignOut(false);
               setSecrets(null);
@@ -143,11 +203,20 @@ export const ProfileAvatarWithMenu: FC = () => {
         <ProfileButton />
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Label>{authUsername}</Menu.Label>
+        <Menu.Label
+          style={{
+            color: '#a1a1aa',
+            fontSize: '12px',
+            fontWeight: 600,
+            padding: '8px 12px 4px',
+          }}
+        >
+          {authUsername}
+        </Menu.Label>
         {elements}
         <Menu.Divider />
         <Menu.Item
-          color='red'
+          color="red"
           leftSection={
             <ImExit
               style={{
@@ -158,6 +227,21 @@ export const ProfileAvatarWithMenu: FC = () => {
           }
           onClick={() => {
             openExitModal();
+          }}
+          style={{
+            borderRadius: '8px',
+            padding: '10px 12px',
+            transition: 'all 0.2s ease',
+          }}
+          styles={{
+            item: {
+              '&:hover': {
+                background: 'rgba(239, 68, 68, 0.1)',
+              },
+            },
+            itemLabel: {
+              fontSize: '14px',
+            },
           }}
         >
           {t('header.exit')}

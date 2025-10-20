@@ -46,7 +46,7 @@ export const LanguageSelector = (props: { settings: boolean }) => {
   };
 
   return (
-    <div style={{ flex: '1 0 auto' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       <LoadingOverlay
         visible={loaderVisible}
         zIndex={1000}
@@ -55,15 +55,29 @@ export const LanguageSelector = (props: { settings: boolean }) => {
       />
 
       <Select
-        label={props.settings && t('main.language.title')}
+        label={props.settings ? null : t('main.language.title')}
         placeholder={t('main.language.placeholder')}
         nothingFoundMessage={t('main.language.nothingFound')}
-        value={language}
+        value={language ?? i18n.language}
         data={languages}
         onChange={selectLanguage}
         checkIconPosition='right'
-        style={{
-          width: props.settings ? '15rem' : '8rem',
+        size="md"
+        radius="md"
+        variant="filled"
+        styles={{
+          input: {
+            background: 'rgba(40, 40, 50, 0.5)',
+            border: '1px solid rgba(70, 70, 80, 0.3)',
+            color: '#e4e4e7',
+            '&:focus': {
+              border: '1px solid rgba(100, 149, 237, 0.5)',
+            },
+          },
+          label: {
+            color: '#a1a1aa',
+            marginBottom: '8px',
+          },
         }}
       />
     </div>

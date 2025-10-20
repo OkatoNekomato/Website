@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Button, Card, Group, LoadingOverlay, Stack, TextInput, Title } from '@mantine/core';
+import { Button, Card, Group, LoadingOverlay, Stack, TextInput, Title, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from '@mantine/hooks';
 import passwordValidator from 'password-validator';
@@ -95,76 +95,92 @@ export const PasswordEditor = (): JSX.Element => {
   };
 
   return (
-    <Card shadow='xl' padding='lg' radius='md' style={{ width: isMobile ? '80vw' : '460px' }}>
-      <form onSubmit={handleSubmit}>
-        <Stack gap='xs'>
+    <Card
+      shadow="xl"
+      padding="xl"
+      radius="lg"
+      withBorder
+      style={{
+        height: '100%',
+        minHeight: '240px',
+        background: 'rgba(30, 30, 35, 0.6)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(70, 70, 80, 0.3)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Stack gap="lg" style={{ flex: 1, justifyContent: 'space-between' }}>
           <LoadingOverlay
             visible={isLoading}
             zIndex={1000}
             overlayProps={{ radius: 'sm', blur: 2 }}
           />
 
-          <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }}>
-            {t('settings:main.password.title')}
-          </Title>
-
-          {!isEditing ? (
-            <Title order={6} style={{ textAlign: 'center' }}>
-              {t('settings:main.password.description')}
+          <div>
+            <Title order={isMobile ? 4 : 2} style={{ textAlign: 'center' }} c="gray.0" mb="md">
+              {t('settings:main.password.title')}
             </Title>
-          ) : (
-            <>
-              <PasswordInputWithCapsLock
-                label={t('settings:main.password.oldPassword')}
-                value={oldPwd}
-                onChange={(e) => setOldPwd(e.currentTarget.value)}
-                required
-              />
 
-              <PasswordInputWithCapsLock
-                label={t('settings:main.password.newPassword')}
-                value={newPwd}
-                onChange={(e) => setNewPwd(e.currentTarget.value)}
-                error={newPwd && validatePassword(newPwd)}
-                required
-              />
-
-              <PasswordInputWithCapsLock
-                label={t('settings:main.password.confirmPassword')}
-                value={confirmPwd}
-                onChange={(e) => setConfirmPwd(e.currentTarget.value)}
-                error={
-                  confirmPwd && newPwd !== confirmPwd ? t('settings:main.password.mismatch') : null
-                }
-                required
-              />
-
-              {isMfaEnabled && (
-                <TextInput
-                  label={t('settings:main.password.totpCode')}
-                  value={totpCode}
-                  onChange={(e) => setTotpCode(e.currentTarget.value)}
-                  required
-                  error={
-                    totpCode && totpCode.length !== 6 ? t('auth:mfa.validateInstruction') : null
-                  }
-                  placeholder='123456'
-                />
-              )}
-            </>
-          )}
-
-          <Group justify='space-between'>
             {!isEditing ? (
-              <Button fullWidth onClick={() => setIsEditing(true)}>
+              <Text size="sm" style={{ textAlign: 'center' }} c="dimmed" mt="lg">
+                {t('settings:main.password.description')}
+              </Text>
+            ) : (
+              <Stack gap="md" mt="md">
+                <PasswordInputWithCapsLock
+                  label={t('settings:main.password.oldPassword')}
+                  value={oldPwd}
+                  onChange={(e) => setOldPwd(e.currentTarget.value)}
+                  required
+                />
+
+                <PasswordInputWithCapsLock
+                  label={t('settings:main.password.newPassword')}
+                  value={newPwd}
+                  onChange={(e) => setNewPwd(e.currentTarget.value)}
+                  error={newPwd && validatePassword(newPwd)}
+                  required
+                />
+
+                <PasswordInputWithCapsLock
+                  label={t('settings:main.password.confirmPassword')}
+                  value={confirmPwd}
+                  onChange={(e) => setConfirmPwd(e.currentTarget.value)}
+                  error={
+                    confirmPwd && newPwd !== confirmPwd ? t('settings:main.password.mismatch') : null
+                  }
+                  required
+                />
+
+                {isMfaEnabled && (
+                  <TextInput
+                    label={t('settings:main.password.totpCode')}
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.currentTarget.value)}
+                    required
+                    error={
+                      totpCode && totpCode.length !== 6 ? t('auth:mfa.validateInstruction') : null
+                    }
+                    placeholder='123456'
+                  />
+                )}
+              </Stack>
+            )}
+          </div>
+
+          <Group gap="md">
+            {!isEditing ? (
+              <Button fullWidth radius="md" size="md" onClick={() => setIsEditing(true)}>
                 {t('settings:main.password.editButton')}
               </Button>
             ) : (
               <>
-                <Button fullWidth type='submit' color='green'>
+                <Button fullWidth type='submit' radius="md" size="md" color='green' variant="light">
                   {t('settings:main.password.saveButton')}
                 </Button>
-                <Button fullWidth color='red' onClick={handleCancel}>
+                <Button fullWidth radius="md" size="md" color='red' variant="light" onClick={handleCancel}>
                   {t('settings:main.password.cancelButton')}
                 </Button>
               </>

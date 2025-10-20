@@ -71,7 +71,7 @@ export function PrimaryHeader() {
         zIndex={1000000}
       >
         <ScrollArea h={`calc(100vh - ${rem(80)})`} mx='-md'>
-          <Divider mb={'lg'} />
+          <Divider mb={'xl'} />
 
           <Group justify='center' grow pb='xl' px='md'>
             <Flex direction={'column'} gap={'md'}>
