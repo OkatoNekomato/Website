@@ -212,8 +212,8 @@ export async function resetPassword(
     const response = await customFetch(
       `${envs?.API_SERVER_URL}/auth/resetPassword`,
       body,
-      "POST",
-      t
+      'POST',
+      t,
     );
 
     if (!response) {
@@ -224,19 +224,19 @@ export async function resetPassword(
 
     switch (response.status) {
       case 400:
-        sendErrorNotification(t("notifications:invalidCode"));
+        sendErrorNotification(t('notifications:invalidCode'));
         break;
       case 401:
-        sendErrorNotification(t("notifications:unauthorized"));
+        sendErrorNotification(t('notifications:unauthorized'));
         break;
       case 404:
-        sendErrorNotification(t("notifications:userNotFound"));
+        sendErrorNotification(t('notifications:userNotFound'));
         break;
       case 429:
-        sendErrorNotification(t("notifications:tooManyRequests"));
+        sendErrorNotification(t('notifications:tooManyRequests'));
         break;
       default:
-        sendErrorNotification(t("notifications:failedError"));
+        sendErrorNotification(t('notifications:failedError'));
         break;
     }
 

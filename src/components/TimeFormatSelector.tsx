@@ -46,17 +46,17 @@ export const TimeFormatSelector = () => {
   };
 
   return (
-    <Flex direction="column" align="center" gap="xs">
-      <Title order={5} c="gray.2">
+    <Flex direction='column' align='center' gap='xs'>
+      <Title order={5} c='gray.2'>
         {t('main.timeFormat.title')}
       </Title>
 
-      <Flex align="center" gap="sm">
+      <Flex align='center' gap='sm'>
         <Switch
-          size="xl"
-          color="blue"
-          onLabel="12"
-          offLabel="24"
+          size='xl'
+          color='blue'
+          onLabel='12'
+          offLabel='24'
           checked={is12Hours}
           disabled={loading}
           onChange={(e) => toggleFormat(e.currentTarget.checked)}
