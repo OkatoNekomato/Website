@@ -1,45 +1,24 @@
-import { Anchor, Container, Group, rem, Text } from '@mantine/core';
-import classes from './Footer.module.css';
+import { Anchor, Container, Group, Text } from '@mantine/core';
 import { FaLinkedin, FaTelegramPlane } from 'react-icons/fa';
 import { IoLogoGithub } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
 import { ROUTER_PATH } from '../../shared';
 import { useNavigate } from 'react-router-dom';
 import { LanguageSelector } from '../LanguageSelector.tsx';
+import classes from './Footer.module.css';
 
 const links = [
   {
     link: 'https://t.me/immortal_vault',
-    element: (
-      <FaTelegramPlane
-        style={{
-          width: rem(24),
-          height: rem(24),
-        }}
-      />
-    ),
+    icon: <FaTelegramPlane size={20} />,
   },
   {
     link: 'https://www.linkedin.com/company/immortal-vault/',
-    element: (
-      <FaLinkedin
-        style={{
-          width: rem(24),
-          height: rem(24),
-        }}
-      />
-    ),
+    icon: <FaLinkedin size={20} />,
   },
   {
     link: 'https://github.com/Immortal-Vault',
-    element: (
-      <IoLogoGithub
-        style={{
-          width: rem(24),
-          height: rem(24),
-        }}
-      />
-    ),
+    icon: <IoLogoGithub size={20} />,
   },
 ];
 
@@ -47,47 +26,49 @@ export function Footer() {
   const { t } = useTranslation('root');
   const navigate = useNavigate();
 
-  const items = links.map((e) => (
-    <Anchor<'a'>
-      c='dimmed'
-      key={e.link}
-      href={e.link}
-      style={{
-        outline: 'none',
-      }}
-    >
-      {e.element}
-    </Anchor>
-  ));
-
   return (
-    <div className={classes.footer}>
+    <footer className={classes.footer}>
       <Container className={classes.inner}>
         <Anchor<'a'>
+          underline='never'
           c='dimmed'
-          underline={'never'}
-          key={ROUTER_PATH.PRIVACY_POLICY}
-          onClick={() => {
-            navigate(ROUTER_PATH.PRIVACY_POLICY);
-          }}
-          style={{
-            outline: 'none',
-          }}
+          style={{ cursor: 'pointer', userSelect: 'none' }}
+          onClick={() => navigate(ROUTER_PATH.PRIVACY_POLICY)}
         >
-          <Text>{t('footer.privacy')}</Text>
+          <Text size='sm'>{t('footer.privacy')}</Text>
         </Anchor>
-        <Group pt={'5px'} justify={'center'} align={'center'}>
-          {items}
-          <div
-            style={{
-              paddingBottom: '0.3rem',
-            }}
-          >
-            <LanguageSelector settings={false} />
-          </div>
-          <Text c='dimmed'>{import.meta.env.VITE_WEBSITE_VERSION}</Text>
+
+        <Group gap='md' justify='center' align='center'>
+          {links.map(({ link, icon }) => (
+            <Anchor<'a'>
+              key={link}
+              href={link}
+              target='_blank'
+              rel='noopener noreferrer'
+              c='gray.4'
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'color 120ms ease, transform 120ms ease',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color = '#3b82f6';
+                (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color = '';
+                (e.currentTarget as HTMLElement).style.transform = '';
+              }}
+            >
+              {icon}
+            </Anchor>
+          ))}
+          <LanguageSelector settings={false} />
+          <Text size='sm' c='dimmed'>
+            {import.meta.env.VITE_WEBSITE_VERSION}
+          </Text>
         </Group>
       </Container>
-    </div>
+    </footer>
   );
 }

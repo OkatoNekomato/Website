@@ -56,9 +56,9 @@ const appRouter = createBrowserRouter([
     path: ROUTER_PATH.FORGOT,
     element: (
       <NonAuthorizedRoute>
-        <ForgotPassword/>
+        <ForgotPassword />
       </NonAuthorizedRoute>
-    )
+    ),
   },
   {
     path: ROUTER_PATH.MENU,
@@ -125,7 +125,7 @@ export const AppRouter: FC = () => {
       <LoadingOverlay
         visible={true}
         zIndex={1000}
-        overlayProps={{ radius: 'sm', blur: 2 }}
+        className='custom-loading-overlay'
         loaderProps={{ color: 'blue' }}
       />
     );

@@ -1,15 +1,27 @@
 .wrapper {
-  padding-top: calc(var(--mantine-spacing-xl));
-  padding-bottom: calc(var(--mantine-spacing-xl));
-  min-height: calc(var(--mantine-spacing-xl));
+  padding-top: var(--mantine-spacing-xl);
+  padding-bottom: var(--mantine-spacing-xl);
+  background-color: transparent;
+  color: #fff;
 }
 
 .title {
-  margin-bottom: calc(var(--mantine-spacing-xl) * 1.5);
+  margin-bottom: var(--mantine-spacing-xl);
+  font-weight: 700;
+  color: #fff;
 }
 
 .item {
   border-radius: var(--mantine-radius-md);
-  margin-bottom: var(--mantine-spacing-xs);
-  border: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border: 1px solid #222;
+  margin-bottom: var(--mantine-spacing-sm);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+  background-color: #0b0b0d;
+  color: #fff;
+}
+
+.item:hover {
+  box-shadow: var(--mantine-shadow-sm);
 }

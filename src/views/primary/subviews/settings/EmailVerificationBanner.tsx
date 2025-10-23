@@ -1,30 +1,18 @@
-import { useTranslation } from "react-i18next";
-import {
-  Paper,
-  Text,
-  Group,
-  Button,
-  TextInput,
-  Transition,
-  Stack,
-  ThemeIcon,
-} from "@mantine/core";
-import { useState } from "react";
-import {
-  sendEmailVerificationCode,
-  sendEmailVerification,
-} from "../../../../api/gmail";
-import { IconMail, IconMailCheck, IconAlertCircle } from "@tabler/icons-react";
-import { useAppSelector, selectAuth, selectEnvVars } from "../../../../stores";
+import { useTranslation } from 'react-i18next';
+import { Paper, Text, Group, Button, TextInput, Transition, Stack, ThemeIcon } from '@mantine/core';
+import { useState } from 'react';
+import { sendEmailVerificationCode, sendEmailVerification } from '../../../../api/gmail';
+import { IconMail, IconMailCheck, IconAlertCircle } from '@tabler/icons-react';
+import { useAppSelector, selectAuth, selectEnvVars } from '../../../../stores';
 
 export function EmailVerificationBanner() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation('auth');
   const { envs } = useAppSelector(selectEnvVars);
   const { isEmailVerified, authEmail } = useAppSelector(selectAuth);
 
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState('');
 
   const handleSendCode = async () => {
     setLoading(true);
@@ -50,78 +38,74 @@ export function EmailVerificationBanner() {
   };
 
   return (
-    <Transition mounted transition="fade" duration={300} timingFunction="ease">
+    <Transition mounted transition='fade' duration={300} timingFunction='ease'>
       {(styles) => (
         <Paper
           style={{
             ...styles,
-            backgroundColor: "#141418",
+            backgroundColor: '#141418',
             border: isEmailVerified
-              ? "1px solid rgba(0,122,255,0.25)"
-              : "1px solid rgba(0,122,255,0.35)",
-            padding: "1.25rem",
-            borderRadius: "0.75rem",
-            boxShadow: "0 0 20px rgba(0,122,255,0.08)",
-            color: "#f2f3f5",
+              ? '1px solid rgba(0,122,255,0.25)'
+              : '1px solid rgba(0,122,255,0.35)',
+            padding: '1.25rem',
+            borderRadius: '0.75rem',
+            boxShadow: '0 0 20px rgba(0,122,255,0.08)',
+            color: '#f2f3f5',
           }}
         >
-          <Group align="center" gap="sm" mb="sm">
+          <Group align='center' gap='sm' mb='sm'>
             <ThemeIcon
               size={36}
-              radius="xl"
-              variant="light"
-              color="blue"
+              radius='xl'
+              variant='light'
+              color='blue'
               style={{
-                backgroundColor: "rgba(0,122,255,0.15)",
+                backgroundColor: 'rgba(0,122,255,0.15)',
               }}
             >
-              {isEmailVerified ? (
-                <IconMailCheck size={18} />
-              ) : (
-                <IconAlertCircle size={18} />
-              )}
+              {isEmailVerified ? <IconMailCheck size={18} /> : <IconAlertCircle size={18} />}
             </ThemeIcon>
 
             <Stack gap={0}>
-              <Text fw={600} size="sm">
-                {isEmailVerified ? t("verify.doneTitle") : t("verify.title")}
+              <Text fw={600} size='sm'>
+                {isEmailVerified ? t('verify.doneTitle') : t('verify.title')}
               </Text>
-              <Text size="xs" c="dimmed">
+              <Text size='xs' c='dimmed'>
                 {isEmailVerified
-                  ? t("verify.doneDesc")
+                  ? t('verify.doneDesc')
                   : sent
-                    ? t("verify.enterCode")
-                    : t("verify.notice")}
+                    ? t('verify.enterCode')
+                    : t('verify.notice')}
               </Text>
             </Stack>
           </Group>
 
           {!isEmailVerified && (
-            <Stack gap="sm" mt="xs">
+            <Stack gap='sm' mt='xs'>
               {!sent ? (
                 <Button
                   fullWidth
                   onClick={handleSendCode}
                   loading={loading}
-                  color="blue"
+                  color='blue'
                   leftSection={<IconMail size={16} />}
                 >
-                  {t("verify.resend")}
+                  {t('verify.resend')}
                 </Button>
               ) : (
                 <>
                   <TextInput
-                    placeholder={t("verify.codePlaceholder")}
+                    placeholder={t('verify.codePlaceholder')}
                     value={code}
                     onChange={(e) => setCode(e.currentTarget.value)}
-                    size="sm"
+                    size='sm'
                     styles={{
                       input: {
-                        textAlign: "center",
-                        letterSpacing: "0.25em",
-                        backgroundColor: "#0f0f12",
-                        borderColor: "#2a2a2e",
-                        color: "#fff",
+                        textAlign: 'center',
+                        letterSpacing: '0.25em',
+                        backgroundColor: '#0f0f12',
+                        borderColor: '#2a2a2e',
+                        color: '#fff',
                       },
                     }}
                   />
@@ -129,20 +113,20 @@ export function EmailVerificationBanner() {
                     <Button
                       onClick={handleVerifyCode}
                       loading={loading}
-                      color="blue"
+                      color='blue'
                       disabled={!code}
                     >
-                      {t("verify.verify")}
+                      {t('verify.verify')}
                     </Button>
                     <Button
-                      variant="light"
-                      color="gray"
+                      variant='light'
+                      color='gray'
                       onClick={() => {
                         setSent(false);
-                        setCode("");
+                        setCode('');
                       }}
                     >
-                      {t("verify.cancel") || "Отмена"}
+                      {t('verify.cancel') || 'Отмена'}
                     </Button>
                   </Group>
                 </>

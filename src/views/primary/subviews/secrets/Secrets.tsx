@@ -1,20 +1,26 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import {
+  Box,
   Button,
   FileInput,
   Flex,
   Group,
   Input,
   Modal,
-  Select,
+  Paper,
+  ScrollArea,
+  SimpleGrid,
+  Stack,
   TagsInput,
   Text,
-  Textarea,
   TextInput,
-  Paper,
-  Box,
-  Stack,
+  Textarea,
+  Select,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
+import { v7 as uuid } from 'uuid';
+import { useForm } from '@mantine/form';
 import {
   TEnpassField,
   TEnpassFolder,
@@ -23,39 +29,34 @@ import {
   TFolder,
   TSecret,
 } from '../../../../types';
-import { selectSecrets, useAppSelector, useSecrets } from '../../../../stores';
-import { useTranslation } from 'react-i18next';
-import { useDisclosure } from '@mantine/hooks';
-import { v7 as uuid } from 'uuid';
-import { useForm } from '@mantine/form';
+import { selectSecrets, setFolders, useAppSelector, useSecrets } from '../../../../stores';
 import { getProperty, mapValuesToSecretProperties } from '../../../../shared';
 import { PasswordInputWithCapsLock } from '../../../../components';
+import { Secret } from './Secret';
 
-export const Secrets = () => {
+export const Secrets = (): JSX.Element => {
   const { t } = useTranslation('secrets');
   const {
     filteredSecrets,
     selectedSecret,
     selectedFolder,
     setSecrets,
-    setFolders,
     setSelectedSecret,
     setFilteredSecrets,
   } = useSecrets();
   const { secrets, folders } = useAppSelector(selectSecrets);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [addModalState, { open: openAddModal, close: closeAddModal }] = useDisclosure(false);
-  const [importModalState, { open: openImportModal, close: closeImportModal }] =
-    useDisclosure(false);
+  const [addModal, addModalCtrl] = useDisclosure(false);
+  const [editModal, editModalCtrl] = useDisclosure(false);
+  const [importModal, importModalCtrl] = useDisclosure(false);
   const [importedSecretFile, setImportedSecretFile] = useState<File | null>(null);
 
   const secretsToRender = selectedFolder
-    ? (filteredSecrets ?? []).filter((s) =>
-      s.folders?.value?.map((f) => f).includes(selectedFolder.id),
-    )
+    ? (filteredSecrets ?? []).filter((s) => s.folders?.value?.includes(selectedFolder.id))
     : filteredSecrets;
 
-  const addSecretForm = useForm({
+  const form = useForm({
     initialValues: {
       label: '',
       username: '',
@@ -67,41 +68,78 @@ export const Secrets = () => {
       notes: '',
       folder: selectedFolder ? selectedFolder.id : null,
     },
-    validate: {
-      label: (val) => (val.length < 1 ? 'fields.label.canNotBeEmpty' : null),
-    },
+    validate: { label: (val) => (val.length < 1 ? 'fields.label.canNotBeEmpty' : null) },
   });
 
   useEffect(() => {
-    handleSearch(searchQuery);
-  }, [secrets]);
+    if (selectedSecret && editModalCtrl.open()) {
+      form.setValues({
+        label: selectedSecret.label?.value || '',
+        username: selectedSecret.username?.value || '',
+        email: selectedSecret.email?.value || '',
+        password: selectedSecret.password?.value || '',
+        websites: selectedSecret.website?.value || [],
+        phone: selectedSecret.phone?.value || '',
+        mfa: selectedSecret.mfa?.value || '',
+        notes: selectedSecret.notes?.value || '',
+        folder: selectedSecret.folders?.value?.[0] || null,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSecret]);
 
-  const addSecret = async (e: FormEvent) => {
+  const handleSearch = (q: string) => {
+    setSearchQuery(q);
+    if (!q.trim()) {
+      setFilteredSecrets(secrets);
+      return;
+    }
+    const term = q.toLowerCase();
+    setFilteredSecrets(
+      (secrets ?? []).filter((s) => (s.label?.value || '').toLowerCase().includes(term)),
+    );
+  };
+
+  const addSecret = (e: FormEvent) => {
     e.preventDefault();
-    if (addSecretForm.validate().hasErrors) {
-      return;
-    }
-    const { folder: folderId, websites: websites, ...stringValues } = addSecretForm.values;
+    if (form.validate().hasErrors) return;
 
-    if (stringValues.label.length < 1) {
-      return;
-    }
-
-    closeAddModal();
-    addSecretForm.reset();
-
-    const secret: TSecret = {
+    const { folder, websites, ...fields } = form.values;
+    const newSecret: TSecret = {
       id: uuid(),
-      folders: getProperty<string[]>(folderId ? [folderId] : []),
+      folders: getProperty<string[]>(folder ? [folder] : []),
       lastUpdated: Date.now(),
       created: Date.now(),
-      ...mapValuesToSecretProperties(stringValues),
+      ...mapValuesToSecretProperties(fields),
       website: getProperty<string[]>(websites),
     };
 
-    const newSecrets = [secret, ...(secrets ?? [])];
-    setSecrets(newSecrets);
-    setFilteredSecrets(newSecrets);
+    const updated = [newSecret, ...(secrets ?? [])];
+    setSecrets(updated);
+    setFilteredSecrets(updated);
+    addModalCtrl.close();
+    form.reset();
+  };
+
+  const editSecret = (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedSecret) return;
+    if (form.validate().hasErrors) return;
+
+    const { folder, websites, ...fields } = form.values;
+    const updatedOne: TSecret = {
+      ...selectedSecret,
+      folders: getProperty<string[]>(folder ? [folder] : []),
+      lastUpdated: Date.now(),
+      ...mapValuesToSecretProperties(fields),
+      website: getProperty<string[]>(websites),
+    };
+
+    const list = secrets ?? [];
+    const updatedList = list.map((s) => (s.id === updatedOne.id ? updatedOne : s));
+    setSecrets(updatedList);
+    setFilteredSecrets(updatedList);
+    editModalCtrl.close();
   };
 
   const importSecrets = async () => {
@@ -176,246 +214,310 @@ export const Secrets = () => {
     }
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    if (query.trim() === '') {
-      setFilteredSecrets(secrets);
-    } else {
-      const filtered = (secrets ?? []).filter((secret) =>
-        secret.label.value.toLowerCase().includes(query.toLowerCase()),
-      );
-      setFilteredSecrets(filtered);
-    }
-  };
-
-  const getSecretWidth = (secret: TSecret) => {
-    const label = secret.label?.value || '';
-    const username = secret?.username?.value || secret?.email?.value || '';
-    const totalLength = label.length + username.length;
-
-    if (totalLength < 20) return '200px';
-    if (totalLength < 35) return '250px';
-    if (totalLength < 50) return '320px';
-    return '100%';
-  };
-
   const modalStyles = {
     content: {
-      background: 'rgba(24, 24, 27, 0.95)',
-      backdropFilter: 'blur(20px)',
-      border: '1px solid rgba(70, 70, 80, 0.4)',
-    },
-    header: {
-      background: 'transparent',
+      background: 'rgba(20,20,22,0.92)',
+      backdropFilter: 'blur(14px)',
+      border: '1px solid rgba(60,60,65,0.5)',
+      borderRadius: 12,
     },
   };
 
   const inputStyles = {
     input: {
-      background: 'rgba(40, 40, 50, 0.5)',
-      border: '1px solid rgba(70, 70, 80, 0.3)',
-      color: '#e4e4e7',
-      '&:focus': {
-        border: '1px solid rgba(100, 149, 237, 0.5)',
-      },
+      background: 'rgba(28,28,30,0.65)',
+      border: '1px solid rgba(60,60,65,0.5)',
+      color: '#e6e7ea',
+      '&:focus': { border: '1px solid rgba(59,130,246,0.85)' },
     },
-    label: {
-      color: '#a1a1aa',
-      marginBottom: '8px',
-    },
+    label: { color: '#bfc5cc' },
   };
 
   return (
-    <>
+    <Box>
+      <Input
+        placeholder={t('search.placeholder')}
+        mb='md'
+        value={searchQuery}
+        onChange={(e) => handleSearch(e.currentTarget.value)}
+        variant='filled'
+        radius='md'
+        size='md'
+        styles={{
+          input: {
+            background: 'rgba(20,20,22,0.6)',
+            border: '1px solid rgba(50,50,55,0.5)',
+            color: '#e6e7ea',
+          },
+        }}
+      />
+
+      <Flex gap='md' mb='lg'>
+        <Button
+          fullWidth
+          radius='md'
+          size='md'
+          color='blue'
+          onClick={() => {
+            form.reset();
+            addModalCtrl.open();
+          }}
+        >
+          {t('buttons.add')}
+        </Button>
+        <Button
+          fullWidth
+          radius='md'
+          size='md'
+          variant='light'
+          onClick={() => importModalCtrl.open()}
+          color='blue'
+        >
+          {t('buttons.import')}
+        </Button>
+      </Flex>
+
+      <ScrollArea style={{ maxHeight: 540 }}>
+        {(secretsToRender ?? []).length > 0 ? (
+          <SimpleGrid cols={2} spacing='md'>
+            {secretsToRender!.map((secret) => {
+              const isSel = selectedSecret?.id === secret.id;
+              return (
+                <Paper
+                  key={secret.id}
+                  p='md'
+                  radius='md'
+                  withBorder
+                  onClick={() => {
+                    setSelectedSecret(secret);
+                  }}
+                  style={{
+                    cursor: 'pointer',
+                    background: isSel
+                      ? 'linear-gradient(135deg, rgba(59,130,246,0.06), rgba(37,99,235,0.03))'
+                      : 'rgba(28,28,30,0.6)',
+                    border: isSel
+                      ? '1px solid rgba(59,130,246,0.25)'
+                      : '1px solid rgba(60,60,65,0.5)',
+                    transition: 'all 120ms ease',
+                  }}
+                >
+                  <Text size='sm' fw={600} c={isSel ? 'blue.4' : 'gray.0'} mb={4} lineClamp={1}>
+                    {secret.label?.value}
+                  </Text>
+                  <Text size='xs' c={isSel ? 'blue.3' : 'dimmed'} lineClamp={1}>
+                    {secret.username?.value || secret.email?.value || ''}
+                  </Text>
+                </Paper>
+              );
+            })}
+          </SimpleGrid>
+        ) : (
+          <Box py='xl'>
+            <Text c='dimmed' ta='center'>
+              {t('elements.notFound')}
+            </Text>
+          </Box>
+        )}
+      </ScrollArea>
+
+      {selectedSecret && (
+        <Box mt='xl'>
+          <Secret sourceSecret={selectedSecret} onEdit={() => editModalCtrl.open()} />
+        </Box>
+      )}
+
       <Modal
-        centered={true}
-        opened={addModalState}
-        onClose={closeAddModal}
-        size="lg"
+        centered
+        opened={addModal}
+        onClose={() => addModalCtrl.close()}
+        size='lg'
+        styles={modalStyles as any}
         title={
-          <Text size="lg" fw={600} c="gray.0">
+          <Text size='lg' fw={600} c='gray.0'>
             {t('modals.addSecret.title')}
           </Text>
         }
-        closeOnClickOutside={false}
-        closeOnEscape={false}
-        withCloseButton={false}
-        overlayProps={{
-          backgroundOpacity: 0.7,
-          blur: 8,
-        }}
-        styles={modalStyles}
       >
         <form onSubmit={addSecret}>
-          <Stack gap="md">
+          <Stack spacing='md'>
             <TextInput
               label={t('fields.label.title')}
-              value={addSecretForm.values.label}
-              onChange={(event) => addSecretForm.setFieldValue('label', event.currentTarget.value)}
-              error={addSecretForm.errors.label && t(addSecretForm.errors.label.toString())}
-              variant="filled"
-              radius="md"
-              size="md"
+              {...form.getInputProps('label')}
               styles={inputStyles}
             />
             <TextInput
               label={t('fields.username.title')}
-              value={addSecretForm.values.username}
-              onChange={(event) =>
-                addSecretForm.setFieldValue('username', event.currentTarget.value)
-              }
-              variant="filled"
-              radius="md"
-              size="md"
+              {...form.getInputProps('username')}
               styles={inputStyles}
             />
             <TextInput
               label={t('fields.email.title')}
-              value={addSecretForm.values.email}
-              onChange={(event) => addSecretForm.setFieldValue('email', event.currentTarget.value)}
-              type={'email'}
-              variant="filled"
-              radius="md"
-              size="md"
+              type='email'
+              {...form.getInputProps('email')}
               styles={inputStyles}
             />
             <PasswordInputWithCapsLock
               label={t('fields.password.title')}
-              value={addSecretForm.values.password}
-              onChange={(event) =>
-                addSecretForm.setFieldValue('password', event.currentTarget.value)
-              }
+              value={form.values.password}
+              onChange={(e) => form.setFieldValue('password', e.currentTarget.value)}
             />
             <TagsInput
-              value={addSecretForm.values.websites}
-              onChange={(newTags) => {
-                addSecretForm.setFieldValue('websites', newTags);
-              }}
               label={t('fields.website.title')}
-              clearable
-              variant="filled"
-              radius="md"
-              size="md"
+              {...form.getInputProps('websites')}
               styles={inputStyles}
+              clearable
             />
             <TextInput
               label={t('fields.phone.title')}
-              type={'phone'}
-              value={addSecretForm.values.phone}
-              onChange={(event) => addSecretForm.setFieldValue('phone', event.currentTarget.value)}
-              variant="filled"
-              radius="md"
-              size="md"
+              {...form.getInputProps('phone')}
               styles={inputStyles}
             />
             <TextInput
               label={t('fields.mfa.title')}
-              value={addSecretForm.values.mfa}
-              onChange={(event) => addSecretForm.setFieldValue('mfa', event.currentTarget.value)}
-              variant="filled"
-              radius="md"
-              size="md"
+              {...form.getInputProps('mfa')}
               styles={inputStyles}
             />
             <Textarea
               label={t('fields.notes.title')}
-              value={addSecretForm.values.notes}
-              onChange={(event) => addSecretForm.setFieldValue('notes', event.currentTarget.value)}
-              variant="filled"
-              radius="md"
-              minRows={3}
-              size="md"
+              {...form.getInputProps('notes')}
               styles={inputStyles}
+              minRows={3}
             />
-
             {folders.length > 0 && (
               <Select
                 label={t('fields.folder.title')}
                 data={folders.map((f) => ({ value: f.id, label: f.label }))}
-                value={addSecretForm.values.folder}
-                onChange={(value) => {
-                  if (!value) {
-                    return;
-                  }
-
-                  addSecretForm.setFieldValue('folder', value);
-                }}
-                variant="filled"
-                radius="md"
-                size="md"
+                value={form.values.folder}
+                onChange={(v) => v && form.setFieldValue('folder', v)}
                 styles={inputStyles}
               />
             )}
           </Stack>
-
-          <Group mt="xl" justify="end">
-            <Button
-              radius="md"
-              variant="subtle"
-              color="gray"
-              onClick={() => {
-                closeAddModal();
-                addSecretForm.reset();
-              }}
-            >
+          <Group mt='xl' position='right'>
+            <Button variant='subtle' color='gray' radius='md' onClick={() => addModalCtrl.close()}>
               {t('modals.addSecret.buttons.cancel')}
             </Button>
-            <Button type="submit" radius="md">
+            <Button type='submit' color='blue' radius='md'>
               {t('modals.addSecret.buttons.submit')}
             </Button>
           </Group>
         </form>
       </Modal>
+
       <Modal
-        centered={true}
-        opened={importModalState}
-        onClose={closeImportModal}
-        size="md"
+        centered
+        opened={editModal}
+        onClose={() => editModalCtrl.close()}
+        size='lg'
+        styles={modalStyles as any}
         title={
-          <Text size="lg" fw={600} c="gray.0">
+          <Text size='lg' fw={600} c='gray.0'>
+            {t('modals.editSecret.title')}
+          </Text>
+        }
+      >
+        <form onSubmit={editSecret}>
+          <Stack spacing='md'>
+            <TextInput
+              label={t('fields.label.title')}
+              {...form.getInputProps('label')}
+              styles={inputStyles}
+            />
+            <TextInput
+              label={t('fields.username.title')}
+              {...form.getInputProps('username')}
+              styles={inputStyles}
+            />
+            <TextInput
+              label={t('fields.email.title')}
+              type='email'
+              {...form.getInputProps('email')}
+              styles={inputStyles}
+            />
+            <PasswordInputWithCapsLock
+              label={t('fields.password.title')}
+              value={form.values.password}
+              onChange={(e) => form.setFieldValue('password', e.currentTarget.value)}
+            />
+            <TagsInput
+              label={t('fields.website.title')}
+              {...form.getInputProps('websites')}
+              styles={inputStyles}
+              clearable
+            />
+            <TextInput
+              label={t('fields.phone.title')}
+              {...form.getInputProps('phone')}
+              styles={inputStyles}
+            />
+            <TextInput
+              label={t('fields.mfa.title')}
+              {...form.getInputProps('mfa')}
+              styles={inputStyles}
+            />
+            <Textarea
+              label={t('fields.notes.title')}
+              {...form.getInputProps('notes')}
+              styles={inputStyles}
+              minRows={3}
+            />
+            {folders.length > 0 && (
+              <Select
+                label={t('fields.folder.title')}
+                data={folders.map((f) => ({ value: f.id, label: f.label }))}
+                value={form.values.folder}
+                onChange={(v) => v && form.setFieldValue('folder', v)}
+                styles={inputStyles}
+              />
+            )}
+          </Stack>
+          <Group mt='xl' position='right'>
+            <Button variant='subtle' color='gray' radius='md' onClick={() => editModalCtrl.close()}>
+              {t('modals.editSecret.buttons.cancel')}
+            </Button>
+            <Button type='submit' color='blue' radius='md'>
+              {t('modals.editSecret.buttons.submit')}
+            </Button>
+          </Group>
+        </form>
+      </Modal>
+
+      <Modal
+        centered
+        opened={importModal}
+        onClose={() => importModalCtrl.close()}
+        size='md'
+        styles={modalStyles as any}
+        title={
+          <Text size='lg' fw={600} c='gray.0'>
             {t('modals.importSecrets.title')}
           </Text>
         }
-        closeOnClickOutside={false}
-        closeOnEscape={false}
-        withCloseButton={false}
-        overlayProps={{
-          backgroundOpacity: 0.7,
-          blur: 8,
-        }}
-        styles={modalStyles}
       >
-        <Stack gap="md">
+        <Stack>
           <FileInput
             label={t('modals.importSecrets.fileInput.label')}
             placeholder={t('modals.importSecrets.fileInput.placeholder')}
             multiple={false}
             value={importedSecretFile}
             onChange={setImportedSecretFile}
-            variant="filled"
-            radius="md"
-            size="md"
+            variant='filled'
+            radius='md'
+            size='md'
             styles={inputStyles}
           />
         </Stack>
-
-        <Group mt="xl" justify="end">
-          <Button
-            radius="md"
-            variant="subtle"
-            color="gray"
-            onClick={() => {
-              closeImportModal();
-              setImportedSecretFile(null);
-            }}
-          >
+        <Group mt='xl' position='right'>
+          <Button variant='subtle' color='gray' radius='md' onClick={() => importModalCtrl.close()}>
             {t('modals.importSecrets.buttons.cancel')}
           </Button>
           <Button
-            radius="md"
+            radius='md'
+            color='blue'
             onClick={async () => {
               await importSecrets();
-              closeImportModal();
+              importModalCtrl.close();
               setImportedSecretFile(null);
             }}
           >
@@ -423,108 +525,6 @@ export const Secrets = () => {
           </Button>
         </Group>
       </Modal>
-      <Box>
-        <Input
-          placeholder={t('search.placeholder')}
-          mb="md"
-          value={searchQuery}
-          onChange={(e) => handleSearch(e.currentTarget.value)}
-          variant="filled"
-          radius="md"
-          size="md"
-          styles={{
-            input: {
-              background: 'rgba(40, 40, 50, 0.5)',
-              border: '1px solid rgba(70, 70, 80, 0.3)',
-              color: '#e4e4e7',
-              '&::placeholder': {
-                color: '#71717a',
-              },
-              '&:focus': {
-                border: '1px solid rgba(100, 149, 237, 0.5)',
-              },
-            },
-          }}
-        />
-        <Flex gap="md" mb="lg">
-          <Button
-            fullWidth
-            radius="md"
-            size="md"
-            onClick={() => {
-              addSecretForm.values.folder = selectedFolder ? selectedFolder.id : null;
-              openAddModal();
-            }}
-          >
-            {t('buttons.add')}
-          </Button>
-          <Button fullWidth radius="md" size="md" variant="light" onClick={openImportModal}>
-            {t('buttons.import')}
-          </Button>
-        </Flex>
-        <Text size="sm" c="dimmed" mb="md" fw={500}>
-          {t('elements.title')}: {(secretsToRender ?? []).length}
-        </Text>
-        {(secretsToRender ?? [])?.length > 0 ? (
-          <Flex wrap="wrap" gap="md" justify="flex-start">
-            {(secretsToRender ?? []).map((secret) => (
-              <Paper
-                key={secret.id}
-                p="md"
-                radius="md"
-                style={{
-                  cursor: 'pointer',
-                  background:
-                    selectedSecret?.id === secret.id
-                      ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%)'
-                      : 'rgba(39, 39, 42, 0.5)',
-                  border: `1px solid ${selectedSecret?.id === secret.id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(70, 70, 80, 0.3)'}`,
-                  transition: 'all 0.2s ease',
-                  minHeight: '80px',
-                  minWidth: getSecretWidth(secret),
-                  maxWidth: '100%',
-                  flex: '1 1 auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                }}
-                onClick={() => {
-                  setSelectedSecret(secret);
-                }}
-              >
-                <Text
-                  size="sm"
-                  fw={600}
-                  c={selectedSecret?.id === secret.id ? 'blue.4' : 'gray.0'}
-                  mb={4}
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {secret.label?.value}
-                </Text>
-                <Text
-                  size="xs"
-                  c={selectedSecret?.id === secret.id ? 'blue.5' : 'dimmed'}
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {secret?.username?.value || secret?.email?.value || ''}
-                </Text>
-              </Paper>
-            ))}
-          </Flex>
-        ) : (
-          <Text c="dimmed" size="sm" ta="center" py="xl">
-            {t('elements.notFound')}
-          </Text>
-        )}
-      </Box>
-    </>
+    </Box>
   );
 };

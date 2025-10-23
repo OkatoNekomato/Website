@@ -1,9 +1,9 @@
-import { Container, Text, Divider, Title } from '@mantine/core';
+import { Container, Text, Divider, Title, Stack } from '@mantine/core';
 import { Footer, RootHeader } from '../../../components';
 import { useTranslation } from 'react-i18next';
 import { ScrollRestoration } from 'react-router-dom';
 
-const privacySections = [
+const sections = [
   'general_provisions',
   'interpretation_and_definitions',
   'collecting_and_using_your_personal_data',
@@ -26,42 +26,39 @@ export function PrivacyPolicy() {
   return (
     <>
       <RootHeader />
-      <Container size='xl' mb='xl'>
-        <Title order={1} style={{ marginTop: '10px', marginBottom: '10px' }}>
-          {t('header')}
-        </Title>
-        <Divider />
-        <Title order={2} style={{ marginTop: '10px', marginBottom: '10px' }}>
-          {t('last_updated')}
-        </Title>
-        <Divider style={{ paddingBottom: '10px' }} />
-        {privacySections.map((sectionKey, index) => {
-          const section: any = t(sectionKey, { returnObjects: true });
-          const sectionNumber = index + 1;
+      <Container size='xl' my='xl'>
+        <Stack gap='sm'>
+          <Title order={1}>{t('header')}</Title>
+          <Divider />
+          <Title order={2}>{t('last_updated')}</Title>
+          <Divider />
+        </Stack>
 
-          return (
-            <section
-              key={sectionKey}
-              style={{
-                marginBottom: '2rem',
-              }}
-            >
-              {' '}
-              <Title order={2} mb={'xs'}>
-                {sectionNumber}. {section['title']}
-              </Title>
-              {Array.isArray(section.items) && (
-                <ol>
-                  {section.items.map((item: string, itemIndex: number) => (
-                    <li key={itemIndex}>
-                      <Text size={'lg'}>{item}</Text>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </section>
-          );
-        })}
+        <Stack mt='xl'>
+          {sections.map((key, i) => {
+            const section = t(key, { returnObjects: true }) as {
+              title: string;
+              items?: string[];
+            };
+
+            return (
+              <section key={key}>
+                <Title order={2} mb='xs'>
+                  {i + 1}. {section.title}
+                </Title>
+                {section.items && (
+                  <ol style={{ paddingLeft: '1.5rem' }}>
+                    {section.items.map((text, j) => (
+                      <li key={j}>
+                        <Text size='lg'>{text}</Text>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </section>
+            );
+          })}
+        </Stack>
       </Container>
       <Footer />
       <ScrollRestoration />
